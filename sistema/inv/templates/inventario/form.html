@@ -1,0 +1,43 @@
+<form enctype="multipart/form-data" action="" method="post">
+    {% csrf_token %}
+  
+  
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Agregar un nuevo registro</h5>
+  
+  
+  
+        <!-- Multi Columns Form -->
+        <form class="row g-3" method="post">
+          {% for campo in formulario %}
+          <div class="col-md-8">
+            <label for="{{ campo.id_for_label }}" class="form-label">{{ campo.label }}</label>
+            {{ campo }}
+          </div>
+          <br>
+          
+          {% endfor %}
+          <br>
+          
+          <br>
+          <br>
+          <div class="text-center">
+            <button type="submit" class="btn btn-primary">Submit</button>
+            <button type="reset" class="btn btn-secondary">Reset</button>
+            <a
+              name=""
+              id=""
+              class="btn btn-danger"
+              href="{% url 'usuarios' %}"
+              role="button"
+              >Cancelar</a
+            >
+            
+          </div>
+        </form><!-- End Multi Columns Form -->
+  
+      </div>
+    </div>
+  
+    

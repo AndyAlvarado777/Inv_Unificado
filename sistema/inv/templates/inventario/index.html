@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+Inventario
+{% endblock %}
+
+
+{% block contenido %}
+<h1>Inventario</h1>
+<p>Inventario de equipos.</p>
+
+<a name="" id="" class="btn btn-primary" href="{% url 'crear_inventario' %}" role="button">Agregar</a>
+<br>
+<br>
+
+
+<div class="table-container">
+    <table id="miTabla" class="table table-hover datatable">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Acciones</th>
+                <th>Tipo</th>
+                <th>Serie</th>
+                <th>Marca</th>
+                <th>Modelo</th>
+                <th>Observaciones</th>
+                <th>Estado</th>
+
+
+            </tr>
+        </thead>
+        <tbody>
+
+            {% for datos in inventario %}
+            <!-- Fila principal 1 -->
+            <tr>
+                <td>{{ datos.id }}</td>
+                <td>
+                    <div class="dropdown"></div>
+                    <button class="btn btn-light btn-sm dropdown-toggle" type="button" id="dropdownMenuButton"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-three-dots"></i>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        
+                        <li>
+                            <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                data-bs-target="#confirmDeleteModal1" onclick="setDeleteId('{{ datos.id }}')">
+                                <i class="bi bi-trash"></i> Eliminar
+                            </a>
+                        </li>
+                        <li><a class="dropdown-item" href="{% url 'editar_inventario' %}"><i class="bi bi-eye"></i> Ver
+                                más</a></li>
+                    </ul>
+</div>
+</td>
+
+
+
+<td>{{ datos.tipo_equipo }}</td>
+<td>{{ datos.serie }}</td>
+<td>{{ datos.marca }}</td>
+<td>{{ datos.modelo }}</td>
+<td>{{ datos.observaciones }}</td>
+
+<td>
+    {% if datos.estado == 1 %}
+    <span class="badge bg-success">En Inventario</span>
+    {% elif datos.estado == 2 %}
+    <span class="badge bg-warning text-dark">Asignado</span>
+    {% elif datos.estado == 3 %}
+    <span class="badge bg-info text-dark">Prestado</span>
+    {% endif %}
+</td>
+
+</tr>
+
+{% endfor %}
+
+
+<!-- Modal de confirmación -->
+<div class="modal fade" id="confirmDeleteModal1" tabindex="-1" aria-labelledby="confirmDeleteModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                ¿Estás seguro de que deseas eliminar este Registro?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteButton">Eliminar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- En el JavaScript del template -->
+<script>
+    function setDeleteId(id) {
+        deleteId = id;
+    }
+    
+    document.getElementById('confirmDeleteButton').addEventListener('click', function() {
+        if (deleteId) {
+            // Usa el nombre de la URL en lugar de la ruta hardcodeada
+            window.location.href = "{% url 'eliminar_inventario' 0 %}".replace('0', deleteId);
+        }
+    });
+</script>
+</tbody>
+</table>
+</div>
+
+{% endblock %}

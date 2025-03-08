@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+Usuarios
+{% endblock %}
+
+
+{% block contenido %}
+<h1>Usuarios</h1>
+<p>Aqui hay usuarios.</p>
+
+<a name="" id="" class="btn btn-primary" href="{% url 'crear' %}" role="button">Agregar un nuevo usuario</a>
+<br>
+<br>
+
+
+<div class="table-container">
+    <table id="miTabla" class="table table-hover datatable">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Acciones</th>
+                <th>Nombre</th>
+                <th>Correo</th>
+                <th>Departamento</th>
+                <th>Puesto</th>
+                <th>Rol</th>
+                <th>Estado</th>
+                <th>Password</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            {% for datos in user %}
+            <!-- Fila principal 1 -->
+            <tr>
+                <td>{{ datos.id }}</td>
+                <td>
+                    <div class="dropdown"></div>
+                    <button class="btn btn-light btn-sm dropdown-toggle" type="button" id="dropdownMenuButton"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-three-dots"></i>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal"
+                            data-bs-target="#resetPasswordModal"
+                            onclick="document.getElementById('userId').value='{{ datos.id }}'">
+                            <i class="bi bi-key"></i> Restablecer Contraseña
+                         </a></li>
+                        <li>
+                            <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                data-bs-target="#confirmDeleteModal" onclick="setDeleteId('{{ datos.id }}')">
+                                <i class="bi bi-trash"></i> Eliminar
+                            </a>
+                        </li>
+                        <li><a class="dropdown-item" href="{% url 'editar' datos.id %}"><i class="bi bi-eye"></i> Ver más</a></li>
+                    </ul>
+</div>
+</td>
+
+
+
+<td>{{ datos.nombre }}</td>
+<td>{{ datos.correo }}</td>
+<td>{{ datos.departamento }}</td>
+<td>{{ datos.puesto }}</td>
+<td>
+    {% if datos.rol == 1 %}
+    <span class="badge bg-success">Administardor</span>
+    {% elif datos.rol == 2 %}
+    <span class="badge bg-info text-dark">Usuario</span>
+    {% elif datos.rol == 3 %}
+    <span class="badge bg-warning text-dark">Invitado</span>
+    {% endif %}
+</td>
+<td>
+    {% if datos.estado == 1 %}
+    <span class="badge bg-success">Activo</span>
+    {% elif datos.estado == 2 %}
+    <span class="badge bg-warning text-dark">Desactivado</span>
+    {% elif datos.estado == 3 %}
+    <span class="badge bg-info text-dark">En espera</span>
+    {% endif %}
+</td>
+<td>{{datos.password}}</td>
+</tr>
+
+{% endfor %}
+<!-- Modal de confirmación -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                ¿Estás seguro de que deseas eliminar este Usuario?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteButton">Eliminar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para restablecer contraseña -->
+<div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-labelledby="resetPasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="resetPasswordModalLabel">Restablecer Contraseña</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="resetPasswordForm" method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="newPassword" class="form-label">Nueva Contraseña</label>
+                        <input type="password" class="form-control" id="newPassword" name="new_password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirmPassword" class="form-label">Confirmar Nueva Contraseña</label>
+                        <input type="password" class="form-control" id="confirmPassword" name="confirm_password" required>
+                    </div>
+                    <input type="hidden" name="user_id" id="userId">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="submitResetPassword()">Restablecer Contraseña</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let deleteId = null;
+
+    function submitResetPassword() {
+    const userId = document.getElementById('userId').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+
+    if (newPassword !== confirmPassword) {
+        alert("Las contraseñas no coinciden.");
+        return;
+    }
+
+    // Enviar el formulario usando Fetch API
+    fetch(`/usuarios/restablecer_contrasena/${userId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ new_password: newPassword })
+    })
+    .then(response => {
+        if (response.ok) {
+            alert("Contraseña restablecida con éxito.");
+            location.reload(); // Recargar la página o redirigir según sea necesario
+        } else {
+            alert("Error al restablecer la contraseña.");
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+
+function setDeleteId(id) {
+    deleteId = id; // Guarda el ID del registro a eliminar
+}
+
+document.getElementById('confirmDeleteButton').addEventListener('click', function() {
+    if (deleteId) {
+        // Redirigir a la URL de eliminación
+        window.location.href = `/usuarios/eliminar/${deleteId}`;
+    }
+});
+
+
+</script>
+</tbody>
+</table>
+</div>
+
+{% endblock %}

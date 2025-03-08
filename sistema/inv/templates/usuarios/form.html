@@ -1,0 +1,67 @@
+<form enctype="multipart/form-data" action="" method="post">
+  {% csrf_token %}
+
+
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title">Agregar un nuevo usuario</h5>
+
+
+
+      <!-- Multi Columns Form -->
+      <form class="row g-3" method="post">
+        {% for campo in formulario %}
+        <div class="col-md-8">
+          <label for="{{ campo.id_for_label }}" class="form-label">{{ campo.label }}</label>
+          {{ campo }}
+        </div>
+        <br>
+        
+        {% endfor %}
+        <br>
+        <div class="col-md-6">
+          <label for="inputPassword5" class="form-label">Password</label>
+          <div class="input-group">
+              <input type="password" class="form-control" id="inputPassword5" name="password" >
+              <div class="input-group-text" onclick="togglePasswordVisibility()">
+                  <i id="password-icon" class="bi bi-eye"></i>
+              </div>
+          </div>
+      </div>
+        <br>
+        <br>
+        <div class="text-center">
+          <button type="submit" class="btn btn-primary">Submit</button>
+          <button type="reset" class="btn btn-secondary">Reset</button>
+          <a
+            name=""
+            id=""
+            class="btn btn-danger"
+            href="{% url 'usuarios' %}"
+            role="button"
+            >Cancelar</a
+          >
+          
+        </div>
+      </form><!-- End Multi Columns Form -->
+
+    </div>
+  </div>
+
+  <script>
+    function togglePasswordVisibility() {
+    var passwordInput = document.getElementById('inputPassword5');
+    var passwordIcon = document.getElementById('password-icon');
+
+    if (passwordInput.type === "password") {
+        passwordInput.type = "text";
+        passwordIcon.classList.remove('fa-eye');
+        passwordIcon.classList.add('fa-eye-slash');
+    } else {
+        passwordInput.type = "password";
+        passwordIcon.classList.remove('fa-eye-slash');
+        passwordIcon.classList.add('fa-eye');
+    }
+}
+
+  </script>
