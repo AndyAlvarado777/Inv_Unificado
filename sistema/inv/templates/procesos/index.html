@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+
+{% block titulo %}
+Procesos
+{% endblock %}
+
+
+{% block contenido %}
+<h1>Procesos</h1>
+<p>Procesos de prestamos, entrega o detalle</p>
+
+<a name="" id="" class="btn btn-primary" href="{% url 'crear_procesos' %}" role="button">Agregar un nuevo proceso</a>
+<br>
+<br>
+<div class="table-container">
+    <table id="miTabla" class="table table-hover datatable">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Equipos</th>
+                <th>Acciones</th>
+                <th>Solicitante</th>
+                <th>Departamento</th>
+                <th>Tipo</th>
+                <th>Fecha inicio</th>
+                <th>Fecha Fin</th>
+                <th>Descripción</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Fila de ejemplo -->
+            <tr>
+                <td>1</td>
+                <td>
+                    <!-- Botón para abrir el modal -->
+                    <button 
+                        class="btn btn-primary btn-sm" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#detalleModal"
+                        onclick="mostrarDetalles(1)"> <!-- Pasamos solo el ID -->
+                        +
+                    </button>
+                </td>
+                <td>
+                    <div class="dropdown">
+                        <button class="btn btn-light btn-sm dropdown-toggle" type="button" id="dropdownMenuButton"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-three-dots"></i>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                            <li>
+                                <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                    data-bs-target="#confirmDeleteModal1" onclick="setDeleteId('{{ 1 }}')">
+                                    <i class="bi bi-trash"></i> Eliminar
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#"><i class="bi bi-eye"></i> Ver más</a>
+                            </li>
+                        </ul>
+                    </div>
+                </td>
+                <td>Juan Lopez</td>
+                <td>Logistica</td>
+                <td>Prestamo</td>
+                <td>10/05/2025</td>
+                <td>30/05/2025</td>
+                <td>3 Equipos desktop</td>
+                <td><span class="badge bg-success">En Inventario</span></td>
+            </tr>
+            
+
+            <!-- Más filas según sea necesario -->
+        </tbody>
+    </table>
+</div>
+
+
+
+
+
+<!--
+<td>
+    {% if datos.estado == 1 %}
+    <span class="badge bg-success">En Inventario</span>
+    {% elif datos.estado == 2 %}
+    <span class="badge bg-warning text-dark">Asignado</span>
+    {% elif datos.estado == 3 %}
+    <span class="badge bg-info text-dark">Prestado</span>
+    {% endif %}
+</td>-->
+
+</tr>
+
+
+
+
+<!-- Modal de confirmación -->
+<div class="modal fade" id="confirmDeleteModal1" tabindex="-1" aria-labelledby="confirmDeleteModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                ¿Estás seguro de que deseas eliminar este Registro?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteButton">Eliminar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal para mostrar detalles -->
+<div class="modal fade" id="detalleModal" tabindex="-1" aria-labelledby="detalleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="detalleModalLabel">Detalles del Registro</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Contenido dinámico del modal -->
+                <table class="table table-bordered">
+                    <tbody>
+                        <!-- Fila de ejemplo -->
+                        <tr>
+                            <td>1</td>
+                            
+                            <td>
+                                <div class="dropdown"></div>
+                                <button class="btn btn-light btn-sm dropdown-toggle" type="button" id="dropdownMenuButton"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-three-dots"></i>
+                                </button>
+                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            
+                                    <li>
+                                        <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                            data-bs-target="#confirmDeleteModal1" onclick="setDeleteId('{{ 1 }}')">
+                                            <i class="bi bi-trash"></i> Eliminar
+                                        </a>
+                                    </li>
+                                    <li><a class="dropdown-item" href="#"><i class="bi bi-eye"></i> Ver
+                                            más</a></li>
+                                </ul>
+                            </td>
+                            <td id="detalle-solicitante"></td>
+                            <td>#</td>
+                            <td>#</td>
+                            <td>#</td>
+                            <td>#</td>
+                            <td><span class="badge bg-success">En Inventario</span></td>
+                        </tr>
+            
+                        <!-- Más filas según sea necesario -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <!-- Acciones adicionales -->
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- En el JavaScript del template -->
+
+<script>
+    // Función para pasar datos dinámicamente al modal
+    function mostrarDetalles(data) {
+        document.getElementById('detalle-id').textContent = data.id;
+        document.getElementById('detalle-solicitante').textContent = data.solicitante;
+        
+    }
+</script>
+<script>
+    // Función para alternar la visibilidad de los detalles
+    function toggleDetails(row) {
+        const nextRow = row.nextElementSibling;
+        if (nextRow && nextRow.classList.contains('details')) {
+            nextRow.style.display = nextRow.style.display === 'none' ? 'table-row' : 'none';
+        }
+    }
+</script>
+
+<style>
+    .details {
+        background-color: #f9f9f9;
+        /* Color de fondo para los detalles */
+    }
+
+    /* Estilo opcional para mejorar la apariencia */
+    .table-container {
+        margin-top: 20px;
+    }
+
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+    }
+
+    .modal-lg {
+        max-width: 800px;
+    }
+</style>
+<script>
+    function setDeleteId(id) {
+        deleteId = id;
+    }
+
+    document.getElementById('confirmDeleteButton').addEventListener('click', function () {
+        if (deleteId) {
+            // Usa el nombre de la URL en lugar de la ruta hardcodeada
+            window.location.href = "{% url 'eliminar_inventario' 0 %}".replace('0', deleteId);
+        }
+    });
+</script>
+</tbody>
+</table>
+</div>
+
+{% endblock %}

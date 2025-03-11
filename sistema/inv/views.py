@@ -15,6 +15,8 @@ from django.views.decorators.csrf import csrf_exempt
 from .models import Inventario
 from .forms import InventarioForm
 from django.shortcuts import get_object_or_404
+from django.views.decorators.http import require_GET
+from django.db.models import Q
 
 
 
@@ -98,3 +100,39 @@ def eliminar_inventario(request, id):
     inventario = get_object_or_404(Inventario,id=id)
     inventario.delete()
     return redirect('inventario')
+
+
+
+# Vistas para los procesos
+
+def procesos(request):
+    return render(request, 'procesos/index.html')
+
+
+@require_GET
+def buscar_inventario(request):
+    query = request.GET.get('buscar', '')
+    inventario = Inventario.objects.filter(nombre__icontains=query).values('id', 'modelo')
+    return JsonResponse(list(inventario), safe=False)
+    
+def crear_procesos(request):
+    inventario = Inventario.objects.filter(estado=1)  # Filtra solo estado=3
+    return render(request, 'procesos/crear.html', {'inventario': inventario})
+
+def agregar_equipo(request, equipo_id):
+    if request.method == "POST":
+        # Cambiar el estado del equipo a 4
+        equipo = Inventario.objects.get(id=equipo_id)
+        equipo.estado = 4
+        equipo.save()
+        return redirect('crear_procesos') 
+    
+def eliminar_equipo(request, equipo_id):
+    if request.method == "POST":
+        equipo = Inventario.objects.get(id=equipo_id)
+        equipo.estado = 1  # Cambiar el estado a "3"
+        equipo.save()
+        return JsonResponse({'success': True})
+
+
+     

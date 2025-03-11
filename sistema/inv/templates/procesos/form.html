@@ -1,0 +1,100 @@
+<div class="container mt-5">
+    <h1 class="mb-4">Agregar Nuevo Proceso</h1>
+    <p class="lead">Completa el siguiente formulario para agregar un nuevo proceso.</p>
+
+    <form id="agregarProcesoForm">
+        <div class="mb-3">
+            <label for="solicitante" class="form-label">Solicitante</label>
+            <input type="text" class="form-control" id="solicitante" name="solicitante" required>
+        </div>
+        <div class="row mb-3">
+
+            <div class="col-md-6">
+                <label for="departamento" class="form-label">Departamento</label>
+                <input type="text" class="form-control" id="departamento" name="departamento" required>
+            </div>
+            <div class="col-md-6">
+                <label for="tipo" class="form-label">Tipo</label>
+                <select class="form-select" id="tipo" name="tipo" required>
+                    <option value="prestamo">Préstamo</option>
+                    <option value="entrega">Entrega</option>
+                    <option value="detalle">Detalle</option>
+                </select>
+            </div>
+        </div>
+
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="fecha_inicio" class="form-label">Fecha Inicio</label>
+                <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" required>
+            </div>
+            <div class="col-md-6">
+                <label for="fecha_fin" class="form-label">Fecha Fin</label>
+                <input type="date" class="form-control" id="fecha_fin" name="fecha_fin" required>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="descripcion" class="form-label">Descripción</label>
+            <textarea class="form-control" id="descripcion" name="descripcion" rows="4"></textarea>
+        </div>
+        <br>
+        <h3>Asigna equipos al proceso</h3>
+        <div class="card">
+            <div class="table-container" style="padding: 1em;">
+                <table id="miTabla" class="table table-hover table-striped ">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Seleccionar</th>
+                            <th>Marca</th>
+                            <th>Modelo</th>
+                            <th>Serie</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for equipo in inventario %}
+                        {% if equipo.estado == 1 %}
+                        <tr>
+                            <td>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="" />
+                                </div>
+                            </td>
+                            <td>{{ equipo.marca }}</td>
+                            <td>{{ equipo.modelo }}</td>
+                            <td>{{ equipo.serie }}</td>
+                            <td><!-- Acciones aquí --></td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+
+
+        <button type="submit" class="btn btn-primary me-2">Guardar Proceso</button>
+        <a href="{% url 'procesos' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+    
+
+</div>
+
+<script>
+    $(document).ready(function () {
+    $('#miTabla').DataTable({
+        paging: true, // Habilita la paginación
+        searching: true, // Habilita la barra de búsqueda
+        ordering: true, // Habilita el ordenamiento por columnas
+        language: {
+            url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json" // Traducción al español
+        }
+    });
+});
+
+</script>
+
+

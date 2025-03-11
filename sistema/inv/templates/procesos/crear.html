@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block titulo %} Agregar Proceso {% endblock%}
+
+{% block contenido %}
+<div class="card">
+    <div class="card-header">Agregar un Proceso</div>
+    <div class="card-body">
+        <h4 class="card-title">Datos</h4>
+        
+        {% include 'procesos/form.html' %}
+    </div>
+    <div class="card-footer text-muted">Footer</div>
+</div>
+
+
+
+{% endblock %}
+
+
+

@@ -78,10 +78,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'inv_unificado',
-        'USER': 'admin',                 
-        'PASSWORD': 'Andre$.xx777',          
-        'HOST': 'database-andy.c8b4eauikxso.us-east-1.rds.amazonaws.com',            
-        'PORT': '3306', 
+        'USER': 'root',                 
+        'PASSWORD': 'YrzbFJWpsNpEayajscyoAdtmLRgOThWB',          
+        'HOST': 'crossover.proxy.rlwy.net',            
+        'PORT': '43264', 
     }
 }
 
