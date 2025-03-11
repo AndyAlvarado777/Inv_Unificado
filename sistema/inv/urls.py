@@ -1,11 +1,14 @@
 from django.urls import path
 from . import views
 
+
 from django.conf import settings 
 from django.contrib.staticfiles.urls import static
 
 urlpatterns = [
     path('', views.inicio, name = 'inicio'),
+    path('accounts/login/', views.login_view, name='custom_login'),
+    path('logout/', views.logout_view, name='logout'),
     path('usuarios/', views.usuarios, name = 'usuarios'),
     path('usuarios/crear', views.crear_usuario, name = 'crear'),
     path('usuarios/eliminar/<int:id>', views.eliminar_usuario, name = 'eliminar'),

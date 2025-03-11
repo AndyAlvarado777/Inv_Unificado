@@ -1,7 +1,17 @@
 from django.db import models
-
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
+from django.utils.timezone import now
 # Create your models here.
-class Usuario(models.Model):
+
+class UsuarioManager(BaseUserManager):
+    def create_user(self, correo, password=None, **extra_fields):
+        if not correo:
+            raise ValueError('El correo es obligatorio')
+        user = self.model(correo=self.normalize_email(correo), **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+class Usuario(AbstractBaseUser, PermissionsMixin):
     id = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=100, verbose_name='Nombre', db_index=True)
     correo = models.CharField(max_length=100, verbose_name='Correo', db_index=True)
@@ -14,12 +24,18 @@ class Usuario(models.Model):
     ]
     rol = models.IntegerField(verbose_name='rol', choices=ROL_CHOICES, db_index=True)
     password = models.CharField(max_length=100, verbose_name='Password', db_index=True)
+    last_login = models.DateTimeField(verbose_name='Último inicio de sesión', default=now)
     PASS_CHOICES = [
         (1, 'Administrador'),
         (2, 'Usuario'),
         (3, 'Invitado')
     ]
     estado = models.IntegerField(verbose_name='Estado', db_index=True)
+
+    USERNAME_FIELD = 'correo'
+    REQUIRED_FIELDS = ['nombre']
+    
+    objects = UsuarioManager()
 
     def __str__(self):
         return self.nombre  # Representación legible del usuario

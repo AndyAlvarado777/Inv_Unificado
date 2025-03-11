@@ -1,5 +1,6 @@
-from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+from django.core.exceptions import MultipleObjectsReturned
 
 # Create your views here.
 import json
@@ -17,11 +18,87 @@ from .forms import InventarioForm
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_GET
 from django.db.models import Q
+from django.contrib.auth import login as auth_login, authenticate
+from django.contrib.auth import logout
+from django.contrib import messages
 
 
-
+@login_required
 def inicio(request):
     return render(request, 'inicio.html')
+
+
+
+
+
+def login_view(request):
+    if request.method == 'POST':
+        correo = request.POST.get('correo')
+        password = request.POST.get('password')
+
+        try:
+            # Autenticar al usuario
+            user = authenticate(request, correo=correo, password=password)
+
+            if user is not None:
+                if user.estado == 1:  # Verificar si el estado del usuario es activo
+                    auth_login(request, user)  # Iniciar sesión
+
+                    # Redirigir según el rol del usuario
+                    if user.rol == 1:  # Administrador
+                        return redirect('vista_administrador')
+                    elif user.rol == 2:  # Usuario
+                        return redirect('vista_usuario')
+                    elif user.rol == 3:  # Invitado
+                        return redirect('vista_invitado')
+                else:
+                    messages.error(request, "Tu cuenta está inactiva. Contacta al administrador.")
+            else:
+                messages.error(request, "Credenciales inválidas.")
+        except MultipleObjectsReturned:
+            # Contar cuántos usuarios tienen el mismo correo
+            usuarios_con_correo = Usuario.objects.filter(correo=correo)
+            cantidad = usuarios_con_correo.count()
+
+            # Mostrar mensaje de error indicando el problema
+            messages.error(
+                request,
+                f"Se encontraron {cantidad} usuarios con el mismo correo '{correo}'. Contacta al administrador."
+            )
+
+        return render(request, 'registration/login.html')
+
+    return render(request, 'registration/login.html')
+    if request.method == 'POST':
+        correo = request.POST.get('correo')
+        password = request.POST.get('password')
+        user = authenticate(request, correo=correo, password=password)
+
+        if user is not None:
+            if user.estado == 1:  # Verificar si el estado del usuario es 1 (activo)
+                auth_login(request, user)  # Iniciar sesión
+                
+                # Verificar el rol del usuario
+                if user.rol == 1:  # Rol de Administrador
+                    return redirect('inicio')  # Redirige a la vista para administradores
+                elif user.rol == 2:  # Rol de Usuario
+                    messages.error(request, "Tu cuenta es de usuario. Aun no puedes entrar.")
+                    return render(request, 'registration/login.html')  # Redirige a la vista para usuarios
+                elif user.rol == 3:  # Rol de Invitado
+                    messages.error(request, "Tu cuenta es de invitado. Aun no puedes entrar.")
+                    return render(request, 'registration/login.html') # Redirige a la vista para invitados
+            else:
+                messages.error(request, "Tu cuenta está inactiva. Contacta al administrador.")
+                return render(request, 'registration/login.html')
+        else:
+            messages.error(request, "Credenciales inválidas.")
+            return render(request, 'registration/login.html')
+
+    return render(request, 'registration/login.html')
+
+def logout_view(request):
+    logout(request)  # Cierra la sesión del usuario
+    return redirect('inicio')  # Redirige a la página principal o a la página de login
 
 
 #Vistas para usuarios
