@@ -29,8 +29,15 @@ Procesos
     </ul>
     {% endif %}
 </div>
-<h1>Procesos</h1>
-<p>Procesos de prestamos, entrega o detalle</p>
+<div class="pagetitle">
+    <h1>Procesos</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'inicio' %}">Home</a></li>
+            <li class="breadcrumb-item">Procesos</li>
+        </ol>
+    </nav>
+</div><!-- End Page Title -->
 
 <a name="" id="" class="btn btn-primary" href="{% url 'crear_procesos' %}" role="button">Agregar un nuevo proceso</a>
 <br>
@@ -45,10 +52,12 @@ Procesos
                 <th>Solicitante</th>
                 <th>Ubicación</th>
                 <th>Tipo</th>
+                <th>Responsable</th>
                 <th>Fecha inicio</th>
                 <th>Fecha Fin</th>
-                <th>Descripción</th>
                 <th>Estado</th>
+                <th>Descripción</th>
+                
             </tr>
         </thead>
         <tbody>
@@ -76,17 +85,27 @@ Procesos
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{% url 'editar_proceso' datos.id %}"><i class="bi bi-eye"></i> Ver más</a>
+                                <a class="dropdown-item" href="{% url 'editar_proceso' datos.id %}"><i
+                                        class="bi bi-eye"></i> Ver más</a>
                             </li>
+                            {% if datos.estado != 2 %}
+                            <li>
+                                <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                    data-bs-target="#recibirEquipoModal" onclick="setProcesoId('{{ datos.id }}')">
+                                    <i class="bi bi-eye"></i> Recibir Equipo
+                                </a>
+                            </li>
+                            {% endif %}
+
                         </ul>
                     </div>
                 </td>
                 <td>{{datos.solicitante}}</td>
                 <td>{{datos.ubicacion}}</td>
                 <td>{{datos.tipo}}</td>
+                <td>{{datos.responsable}}</td>
                 <td>{{datos.fecha_inicio}}</td>
                 <td>{{datos.fecha_fin}}</td>
-                <td>{{datos.descripcion}}</td>
                 <td>
                     {% if datos.estado == 1 %}
                     <span class="badge bg-success">Activo</span>
@@ -98,6 +117,8 @@ Procesos
                     <span class="badge bg-info text-dark">Permanente</span>
                     {% endif %}
                 </td>
+                <td>{{datos.descripcion}}</td>
+                
             </tr>
             {% endfor %}
         </tbody>
@@ -124,6 +145,37 @@ Procesos
         </div>
     </div>
 </div>
+
+<!-- Modal para recibir equipo -->
+<div class="modal fade" id="recibirEquipoModal" tabindex="-1" aria-labelledby="recibirEquipoModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="recibirEquipoModalLabel">Recibir Equipo</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="recibirEquipoForm" method="POST">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label">Fecha de Regreso:</label>
+                        <input type="date" class="form-control" name="fecha_regreso" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="btnGuardar">
+                        <span id="spinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        Regresar Equipo
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
 
 
 <!-- Modal para mostrar detalles -->
@@ -153,11 +205,56 @@ Procesos
 </div>
 
 <script>
+    let procesoIdGlobal;
+
+    function setProcesoId(procesoId) {
+        procesoIdGlobal = procesoId;
+    }
+
+
     // Función para pasar datos dinámicamente al modal
     function mostrarDetalles(data) {
         document.getElementById('detalle-id').textContent = data.id;
         document.getElementById('detalle-solicitante').textContent = data.solicitante;
     }
+
+   
+
+    document.getElementById('recibirEquipoForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    
+    // Mostrar spinner
+    document.getElementById('spinner').classList.remove('d-none');
+    document.getElementById('btnGuardar').disabled = true; // Deshabilitar botón
+    
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const fechaRegreso = document.querySelector('input[name="fecha_regreso"]').value;
+    
+    $.ajax({
+        url: '/procesos/' + procesoIdGlobal + '/recibir-equipo/',
+        method: 'POST',
+        headers: {'X-CSRFToken': csrftoken},
+        data: {fecha_regreso: fechaRegreso},
+        success: function(response) {
+            alert('Equipo recibido con éxito.');
+            $('#recibirEquipoModal').modal('hide');
+            location.reload(); // Recarga la página
+            
+            // Ocultar spinner y habilitar botón
+            document.getElementById('spinner').classList.add('d-none');
+            document.getElementById('btnGuardar').disabled = false;
+        },
+        error: function(xhr) {
+            console.error('Error al recibir equipo:', xhr.responseText);
+            alert('Error al recibir el equipo.');
+            
+            // Ocultar spinner y habilitar botón
+            document.getElementById('spinner').classList.add('d-none');
+            document.getElementById('btnGuardar').disabled = false;
+        }
+    });
+});
+
 </script>
 <script>
     // Función para alternar la visibilidad de los detalles
@@ -268,43 +365,43 @@ Procesos
 </script>
 <script>
     function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            // Comprueba si este cookie comienza con el nombre que estamos buscando
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Comprueba si este cookie comienza con el nombre que estamos buscando
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
             }
         }
+        return cookieValue;
     }
-    return cookieValue;
-}
 
-const csrftoken = getCookie('csrftoken');
+    const csrftoken = getCookie('csrftoken');
 
-function quitarEquipo(equipoId, procesoId) {
-    if (confirm('¿Estás seguro de quitar este equipo del proceso?')) {
-        $.ajax({
-            url: `/procesos/${procesoId}/quitar-equipo/${equipoId}/`,
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': csrftoken  // Agrega el token CSRF aquí
-            },
-            success: function() {
-                alert('Equipo quitado del proceso con éxito.');
-                // Refrescar la tabla de equipos
-                mostrarDetalles(procesoId);
-            },
-            error: function(xhr) {
-                console.error('Error al quitar equipo:', xhr.responseText);
-                alert('Error al quitar el equipo del proceso.');
-            }
-        });
+    function quitarEquipo(equipoId, procesoId) {
+        if (confirm('¿Estás seguro de quitar este equipo del proceso?')) {
+            $.ajax({
+                url: `/procesos/${procesoId}/quitar-equipo/${equipoId}/`,
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken  // Agrega el token CSRF aquí
+                },
+                success: function () {
+                    alert('Equipo quitado del proceso con éxito.');
+                    // Refrescar la tabla de equipos
+                    mostrarDetalles(procesoId);
+                },
+                error: function (xhr) {
+                    console.error('Error al quitar equipo:', xhr.responseText);
+                    alert('Error al quitar el equipo del proceso.');
+                }
+            });
+        }
     }
-}
 
 </script>
 
@@ -324,6 +421,10 @@ function quitarEquipo(equipoId, procesoId) {
         transform: translate(-50%, -50%);
         /* Centrado */
     }
+    .spinner-border {
+    border-width: 2px;
+    margin-right: 5px;
+}
 
     @keyframes spin {
         0% {
@@ -364,6 +465,29 @@ function quitarEquipo(equipoId, procesoId) {
             window.location.href = "{% url 'eliminar_inventario' 0 %}".replace('0', deleteId);
         }
     });
+
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+
+
+    // Enviar el token CSRF con la solicitud AJAX
+
+
+
 </script>
 </tbody>
 </table>

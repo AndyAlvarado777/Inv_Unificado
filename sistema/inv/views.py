@@ -296,6 +296,29 @@ def editar_proceso(request, id):
     
     return render(request, 'procesos/editar.html', {'form': form, 'inventario': inventario})
 
+def recibir_equipo(request, id):
+    if request.method == 'POST':
+        fecha_regreso = request.POST.get('fecha_regreso')
+        
+        try:
+            proceso = Procesos.objects.get(id=id)
+            proceso.fecha_regreso = fecha_regreso
+            proceso.estado = 2  # Estado regresado
+            proceso.save()
+            
+            # Actualizar estado de los equipos relacionados
+            for detalle in proceso.detalles.all():
+                equipo = detalle.inventario
+                equipo.estado = 1  # Estado en inventario
+                equipo.save()
+            
+            messages.success(request, 'Equipo recibido con éxito.')
+            return redirect('procesos')
+        except Procesos.DoesNotExist:
+            messages.error(request, 'Proceso no encontrado.')
+            return redirect('procesos')
+    else:
+        return redirect('procesos')
 
 def agregar_equipo(request, equipo_id):
     if request.method == "POST":

@@ -32,13 +32,26 @@ class InventarioForm(forms.ModelForm):
 class ProcesoForm(forms.ModelForm):
     class Meta:
         model = Procesos
-        fields = ('solicitante', 'responsable','ubicacion','tipo', 'fecha_inicio', 'fecha_fin', 'descripcion')
+        fields = ('solicitante', 'responsable', 'ubicacion', 'tipo', 
+                 'fecha_inicio', 'fecha_fin', 'descripcion')
         widgets = {
             'solicitante': forms.Select(attrs={'class': 'form-select'}),
             'responsable': forms.Select(attrs={'class': 'form-select'}),
             'ubicacion': forms.TextInput(attrs={'class': 'form-control'}),
-            'tipo': forms.Select(choices=[('prestamo', 'Prestamo'), ('entrega', 'Entrega')], attrs={'class': 'form-select'}),
-            'fecha_inicio': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
-            'fecha_fin': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
-            'descripcion': forms.TextInput(attrs={'class': 'form-control'}),
+            'tipo': forms.Select(choices=[('prestamo', 'Préstamo'), ('entrega', 'Entrega')], 
+                                attrs={'class': 'form-select'}),
+            'fecha_inicio': forms.DateInput(
+                attrs={'type': 'date', 'class': 'form-control', 'placeholder': 'Fecha de inicio'}
+            ),
+            'fecha_fin': forms.DateInput(
+                attrs={'type': 'date', 'class': 'form-control', 'placeholder': 'Fecha de fin'}
+            ),
+            'descripcion': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
+
+class RecibirEquipoForm(forms.Form):
+    fecha_regreso = forms.DateField(label='Fecha de Regreso', widget=forms.DateInput(attrs={'type': 'date'}))
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['fecha_regreso'].required = True

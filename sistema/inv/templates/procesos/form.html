@@ -4,8 +4,67 @@
         <div class="card-body" style="padding: 1em;">
             <form id="agregarProcesoForm" method="POST" action="">
                 {% csrf_token %}
-                {{ form.as_p }} <!-- Renderiza los campos del formulario -->
-            
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <!-- Errores generales -->
+                    {{ form.non_field_errors }}
+                    
+                    <div class="row g-3 mb-4">
+                        <!-- Columna Izquierda -->
+                        <div class="col-md-6">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">{{ form.solicitante.label }}</label>
+                                    {{ form.solicitante }}
+                                    <div class="text-danger">{{ form.solicitante.errors }}</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">{{ form.responsable.label }}</label>
+                                    {{ form.responsable }}
+                                    <div class="text-danger">{{ form.responsable.errors }}</div>
+                                </div>
+                            </div>
+                
+                            <div class="mb-3">
+                                <label class="form-label">{{ form.ubicacion.label }}</label>
+                                {{ form.ubicacion }}
+                                <div class="text-danger">{{ form.ubicacion.errors }}</div>
+                            </div>
+                        </div>
+                
+                        <!-- Columna Derecha -->
+                        <div class="col-md-6">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">{{ form.fecha_inicio.label }}</label>
+                                    {{ form.fecha_inicio }}
+                                    <div class="text-danger">{{ form.fecha_inicio.errors }}</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">{{ form.fecha_fin.label }}</label>
+                                    {{ form.fecha_fin }}
+                                    <div class="text-danger">{{ form.fecha_fin.errors }}</div>
+                                </div>
+                            </div>
+                
+                            <div class="mb-3">
+                                <label class="form-label">{{ form.tipo.label }}</label>
+                                {{ form.tipo }}
+                                <div class="text-danger">{{ form.tipo.errors }}</div>
+                            </div>
+                        </div>
+                    </div>
+                
+                    <!-- Campo de ancho completo -->
+                    <div class="mb-4">
+                        <label class="form-label">{{ form.descripcion.label }}</label>
+                        {{ form.descripcion }}
+                        <div class="text-danger">{{ form.descripcion.errors }}</div>
+                    </div>
+                
+                
+                
                 <h3>Asigna equipos al proceso</h3>
                 <div class="card">
                     <div class="table-container" style="padding: 1em;">
