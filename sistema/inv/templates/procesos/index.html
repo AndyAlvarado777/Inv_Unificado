@@ -6,6 +6,29 @@ Procesos
 
 
 {% block contenido %}
+<div class="mt-4">
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <div class="container-fluid p-0">
+            {% if message.tags == 'success' %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle me-1"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% elif message.tags == 'danger' %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-octagon me-1"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</div>
 <h1>Procesos</h1>
 <p>Procesos de prestamos, entrega o detalle</p>
 
@@ -20,7 +43,7 @@ Procesos
                 <th>Equipos</th>
                 <th>Acciones</th>
                 <th>Solicitante</th>
-                <th>Departamento</th>
+                <th>Ubicación</th>
                 <th>Tipo</th>
                 <th>Fecha inicio</th>
                 <th>Fecha Fin</th>
@@ -29,16 +52,13 @@ Procesos
             </tr>
         </thead>
         <tbody>
-            <!-- Fila de ejemplo -->
+            {% for datos in procesos %}
             <tr>
-                <td>1</td>
+                <td>{{datos.id}}</td>
                 <td>
                     <!-- Botón para abrir el modal -->
-                    <button 
-                        class="btn btn-primary btn-sm" 
-                        data-bs-toggle="modal" 
-                        data-bs-target="#detalleModal"
-                        onclick="mostrarDetalles(1)"> <!-- Pasamos solo el ID -->
+                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#detalleModal"
+                        onclick="mostrarDetalles('{{ datos.id }}')"> <!-- Pasamos solo el ID -->
                         +
                     </button>
                 </td>
@@ -51,50 +71,39 @@ Procesos
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                             <li>
                                 <a class="dropdown-item" href="#" data-bs-toggle="modal"
-                                    data-bs-target="#confirmDeleteModal1" onclick="setDeleteId('{{ 1 }}')">
+                                    data-bs-target="#confirmDeleteModal1" onclick="setDeleteId('{{ datos.id }}')">
                                     <i class="bi bi-trash"></i> Eliminar
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="#"><i class="bi bi-eye"></i> Ver más</a>
+                                <a class="dropdown-item" href="{% url 'editar_proceso' datos.id %}"><i class="bi bi-eye"></i> Ver más</a>
                             </li>
                         </ul>
                     </div>
                 </td>
-                <td>Juan Lopez</td>
-                <td>Logistica</td>
-                <td>Prestamo</td>
-                <td>10/05/2025</td>
-                <td>30/05/2025</td>
-                <td>3 Equipos desktop</td>
-                <td><span class="badge bg-success">En Inventario</span></td>
+                <td>{{datos.solicitante}}</td>
+                <td>{{datos.ubicacion}}</td>
+                <td>{{datos.tipo}}</td>
+                <td>{{datos.fecha_inicio}}</td>
+                <td>{{datos.fecha_fin}}</td>
+                <td>{{datos.descripcion}}</td>
+                <td>
+                    {% if datos.estado == 1 %}
+                    <span class="badge bg-success">Activo</span>
+                    {% elif datos.estado == 2 %}
+                    <span class="badge bg-warning text-dark">Regresado</span>
+                    {% elif datos.estado == 3 %}
+                    <span class="badge bg-danger text-dark">Caduco</span>
+                    {% elif datos.estado == 4 %}
+                    <span class="badge bg-info text-dark">Permanente</span>
+                    {% endif %}
+                </td>
             </tr>
-            
-
-            <!-- Más filas según sea necesario -->
+            {% endfor %}
         </tbody>
     </table>
 </div>
-
-
-
-
-
-<!--
-<td>
-    {% if datos.estado == 1 %}
-    <span class="badge bg-success">En Inventario</span>
-    {% elif datos.estado == 2 %}
-    <span class="badge bg-warning text-dark">Asignado</span>
-    {% elif datos.estado == 3 %}
-    <span class="badge bg-info text-dark">Prestado</span>
-    {% endif %}
-</td>-->
-
 </tr>
-
-
-
 
 <!-- Modal de confirmación -->
 <div class="modal fade" id="confirmDeleteModal1" tabindex="-1" aria-labelledby="confirmDeleteModalLabel"
@@ -121,66 +130,33 @@ Procesos
 <div class="modal fade" id="detalleModal" tabindex="-1" aria-labelledby="detalleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="detalleModalLabel">Detalles del Registro</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Detalles Completos del Proceso</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <!-- Contenido dinámico del modal -->
-                <table class="table table-bordered">
-                    <tbody>
-                        <!-- Fila de ejemplo -->
-                        <tr>
-                            <td>1</td>
-                            
-                            <td>
-                                <div class="dropdown"></div>
-                                <button class="btn btn-light btn-sm dropdown-toggle" type="button" id="dropdownMenuButton"
-                                    data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="bi bi-three-dots"></i>
-                                </button>
-                                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-            
-                                    <li>
-                                        <a class="dropdown-item" href="#" data-bs-toggle="modal"
-                                            data-bs-target="#confirmDeleteModal1" onclick="setDeleteId('{{ 1 }}')">
-                                            <i class="bi bi-trash"></i> Eliminar
-                                        </a>
-                                    </li>
-                                    <li><a class="dropdown-item" href="#"><i class="bi bi-eye"></i> Ver
-                                            más</a></li>
-                                </ul>
-                            </td>
-                            <td id="detalle-solicitante"></td>
-                            <td>#</td>
-                            <td>#</td>
-                            <td>#</td>
-                            <td>#</td>
-                            <td><span class="badge bg-success">En Inventario</span></td>
-                        </tr>
-            
-                        <!-- Más filas según sea necesario -->
-                    </tbody>
-                </table>
+            <div class="modal-body" id="modalDetalles" style="max-height: 60vh; overflow-y: auto;">
+                <!-- Contenido dinámico -->
+
+                <!-- Spinner -->
+                <div id="spinner" class="d-flex justify-content-center" style="display: none;">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
-                <!-- Acciones adicionales -->
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
             </div>
         </div>
     </div>
 </div>
 
-
-
-<!-- En el JavaScript del template -->
-
 <script>
     // Función para pasar datos dinámicamente al modal
     function mostrarDetalles(data) {
         document.getElementById('detalle-id').textContent = data.id;
         document.getElementById('detalle-solicitante').textContent = data.solicitante;
-        
     }
 </script>
 <script>
@@ -192,8 +168,173 @@ Procesos
         }
     }
 </script>
+<script>
+    function mostrarDetalles(procesoId) {
+        // Reiniciar el contenido del modal y mostrar el spinner
+        $('#modalDetalles').html('<div id="spinner" class="d-flex justify-content-center"><div class="spinner-border" role="status"><span class="visually-hidden">Cargando...</span></div></div>');
+
+        $.ajax({
+            url: `/procesos/${procesoId}/detalles/`,
+            method: 'GET',
+            success: function (response) {
+                let equiposHtml = '';
+
+                response.equipos.forEach(equipo => {
+                    equiposHtml += `
+                        <tr>
+                            <td>
+                                <div class="dropdown">
+                                    <button class="btn btn-light btn-sm dropdown-toggle" type="button" id="dropdownMenuButton"
+                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="bi bi-three-dots"></i>
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                        <li>
+                                            <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                                data-bs-target="#confirmDeleteModal1" onclick="setDeleteId('${equipo.id_equipo}')">
+                                                <i class="bi bi-trash"></i> Eliminar
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="#" onclick="quitarEquipo(${equipo.id_equipo}, ${procesoId})">
+                                                <i class="bi bi-x-circle"></i> Quitar de Proceso
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="#"><i class="bi bi-eye"></i> Ver más</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </td>
+                            <td>${equipo.id_equipo}</td>
+                            <td>${equipo.tipo_equipo}</td>
+                            <td>${equipo.serie}</td>
+                            <td>${equipo.marca}</td>
+                            <td>${equipo.modelo}</td>
+                            <td>${equipo.observaciones}</td>
+                        </tr>
+                    `;
+                });
+                const contenidoModal = `
+                <div class="container-fluid">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p><strong>Solicitante:</strong> ${response.proceso.solicitante}</p>
+                            <p><strong>Ubicación:</strong> ${response.proceso.ubicacion}</p>
+                            <p><strong>Tipo:</strong> ${response.proceso.tipo}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Responsable:</strong> ${response.proceso.responsable}</p>
+                            <p><strong>Fecha Regreso:</strong> ${response.proceso.fecha_regreso}</p>
+                            <p><strong>Descripción:</strong> ${response.proceso.descripcion}</p>
+                        </div>
+                    </div>
+
+                    <h6 class="mb-3">Equipos Relacionados</h6>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped table-sm">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Acciones</th>
+                                    <th>ID</th>
+                                    <th>Tipo</th>
+                                    <th>Serie</th>
+                                    <th>Marca</th>
+                                    <th>Modelo</th>
+                                    <th>Observaciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>${equiposHtml}</tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+                // Actualizar contenido del modal
+                $('#modalDetalles').html(contenidoModal);
+            },
+            error: function (xhr) {
+                console.error('Error al cargar detalles:', xhr.responseText);
+                alert('Error al cargar los detalles del proceso');
+            }
+        });
+    }
+
+    // Evento para reiniciar contenido al cerrar el modal
+    $('#detalleModal').on('hidden.bs.modal', function () {
+        $('#modalDetalles').html('<div id="spinner" class="d-flex justify-content-center"><div class="spinner-border" role="status"><span class="visually-hidden">Cargando...</span></div></div>');
+    });
+
+</script>
+<script>
+    function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Comprueba si este cookie comienza con el nombre que estamos buscando
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+const csrftoken = getCookie('csrftoken');
+
+function quitarEquipo(equipoId, procesoId) {
+    if (confirm('¿Estás seguro de quitar este equipo del proceso?')) {
+        $.ajax({
+            url: `/procesos/${procesoId}/quitar-equipo/${equipoId}/`,
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken  // Agrega el token CSRF aquí
+            },
+            success: function() {
+                alert('Equipo quitado del proceso con éxito.');
+                // Refrescar la tabla de equipos
+                mostrarDetalles(procesoId);
+            },
+            error: function(xhr) {
+                console.error('Error al quitar equipo:', xhr.responseText);
+                alert('Error al quitar el equipo del proceso.');
+            }
+        });
+    }
+}
+
+</script>
 
 <style>
+    .spinner {
+        width: 36px;
+        height: 36px;
+        border: 5px solid rgba(0, 0, 0, 0.3);
+        border-radius: 50%;
+        border-left-color: #007bff;
+        /* Color del spinner */
+        animation: spin 1s ease infinite;
+        position: absolute;
+        /* Para centrarlo */
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        /* Centrado */
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
     .details {
         background-color: #f9f9f9;
         /* Color de fondo para los detalles */

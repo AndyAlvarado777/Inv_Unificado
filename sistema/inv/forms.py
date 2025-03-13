@@ -1,5 +1,5 @@
 from django import forms
-from .models import Usuario
+from .models import Procesos, Usuario
 from .models import Inventario
 
 class UsuarioForm(forms.ModelForm):
@@ -26,4 +26,19 @@ class InventarioForm(forms.ModelForm):
             'modelo': forms.TextInput(attrs={'class': 'form-control'}),
             'observaciones': forms.TextInput(attrs={'class': 'form-control'}),
             'estado': forms.Select(choices=[(1, 'En inventario'), (2, 'Asignado'),(3, 'Prestado')], attrs={'class': 'form-select'})
+        }
+
+
+class ProcesoForm(forms.ModelForm):
+    class Meta:
+        model = Procesos
+        fields = ('solicitante', 'responsable','ubicacion','tipo', 'fecha_inicio', 'fecha_fin', 'descripcion')
+        widgets = {
+            'solicitante': forms.Select(attrs={'class': 'form-select'}),
+            'responsable': forms.Select(attrs={'class': 'form-select'}),
+            'ubicacion': forms.TextInput(attrs={'class': 'form-control'}),
+            'tipo': forms.Select(choices=[('prestamo', 'Prestamo'), ('entrega', 'Entrega')], attrs={'class': 'form-select'}),
+            'fecha_inicio': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'fecha_fin': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'descripcion': forms.TextInput(attrs={'class': 'form-control'}),
         }

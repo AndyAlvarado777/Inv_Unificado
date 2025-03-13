@@ -7,6 +7,7 @@ from django.contrib.staticfiles.urls import static
 
 urlpatterns = [
     path('', views.inicio, name = 'inicio'),
+    path('usuarios/perfil',views.perfil, name = 'perfil'),
     path('accounts/login/', views.login_view, name='custom_login'),
     path('logout/', views.logout_view, name='logout'),
     path('usuarios/', views.usuarios, name = 'usuarios'),
@@ -22,6 +23,9 @@ urlpatterns = [
 
     path('procesos', views.procesos, name = 'procesos'),
     path('procesos/crear', views.crear_procesos, name = 'crear_procesos'),
+     path('procesos/<int:id>/detalles/', views.obtener_detalles_proceso, name='detalles_proceso'),
     path('agregar_equipo/<int:equipo_id>/', views.agregar_equipo, name='agregar_equipo'),
-     path('eliminar_equipo/<int:equipo_id>/', views.eliminar_equipo, name='eliminar_equipo'),
+    path('eliminar_equipo/<int:equipo_id>/', views.eliminar_equipo, name='eliminar_equipo'),
+    path('procesos/<int:proceso_id>/quitar-equipo/<int:equipo_id>/', views.quitar_equipo, name='quitar_equipo'),
+    path('procesos/<int:id>/editar/', views.editar_proceso, name='editar_proceso'),
 ]

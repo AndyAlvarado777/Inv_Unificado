@@ -3,14 +3,20 @@
 {% block titulo %} Agregar Proceso {% endblock%}
 
 {% block contenido %}
-<div class="card">
-    <div class="card-header">Agregar un Proceso</div>
-    <div class="card-body">
-        <h4 class="card-title">Datos</h4>
+    <div class="pagetitle">
+        <h1>Agregar un proceso</h1>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'inicio' %}">Home</a></li>
+                <li class="breadcrumb-item">Procesos</li>
+                <li class="breadcrumb-item">Agregar</li>
+            </ol>
+        </nav>
+    </div><!-- End Page Title -->
+       
         
         {% include 'procesos/form.html' %}
-    </div>
-    <div class="card-footer text-muted">Footer</div>
+    
 </div>
 
 

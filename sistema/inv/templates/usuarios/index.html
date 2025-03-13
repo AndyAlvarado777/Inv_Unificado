@@ -6,8 +6,39 @@ Usuarios
 
 
 {% block contenido %}
-<h1>Usuarios</h1>
-<p>Aqui hay usuarios.</p>
+<div class="mt-4">
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <div class="container-fluid p-0">
+                    {% if message.tags == 'success' %}
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="bi bi-check-circle me-1"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% elif message.tags == 'danger' %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-octagon me-1"></i>
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</div>
+
+<div class="pagetitle">
+    <h1>Usuarios</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'inicio' %}">Home</a></li>
+            <li class="breadcrumb-item">Users</li>
+        </ol>
+    </nav>
+</div><!-- End Page Title -->
 
 <a name="" id="" class="btn btn-primary" href="{% url 'crear' %}" role="button">Agregar un nuevo usuario</a>
 <br>

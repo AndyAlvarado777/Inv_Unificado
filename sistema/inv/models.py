@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseU
 from django.utils.timezone import now
 # Create your models here.
 
+
 class UsuarioManager(BaseUserManager):
     def create_user(self, correo, password=None, **extra_fields):
         if not correo:
@@ -11,6 +12,11 @@ class UsuarioManager(BaseUserManager):
         user.set_password(password)
         user.save(using=self._db)
         return user
+
+    def create_superuser(self, correo, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        return self.create_user(correo, password, **extra_fields)
 class Usuario(AbstractBaseUser, PermissionsMixin):
     id = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=100, verbose_name='Nombre', db_index=True)
@@ -31,7 +37,8 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
         (3, 'Invitado')
     ]
     estado = models.IntegerField(verbose_name='Estado', db_index=True)
-
+    is_staff = models.BooleanField(default=False)  # Obligatorio para admin
+    is_active = models.BooleanField(default=True) 
     USERNAME_FIELD = 'correo'
     REQUIRED_FIELDS = ['nombre']
     
@@ -58,22 +65,25 @@ class Inventario(models.Model):
         return self.nombre  # Representación legible del usuario
     
 class Procesos(models.Model):
-    id = models.AutoField(primary_key=True)
-    id_solicitante = models.IntegerField(verbose_name='Solicitante', db_index=True)    
-    id_responsable = models.IntegerField(verbose_name='Responsable', db_index=True)
+    id = models.AutoField(primary_key=True, db_index=True)
+    solicitante = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='solicitante', null=True, db_index=True)    
+    responsable = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='responsable', null=True, db_index=True)     
     id_autorizo = models.IntegerField(verbose_name='Autorizo', db_index=True)
     id_autoriza_entrega = models.IntegerField(verbose_name='Autoriza Entrega', db_index=True)
     fecha_inicio = models.DateField(verbose_name='Fecha Inicio', db_index=True)
     fecha_fin = models.DateField(verbose_name='Fecha Fin', db_index=True)
-    fecha_regreso = models.DateField(verbose_name='Fecha Regreso', db_index=True)
+    fecha_regreso = models.DateField(verbose_name='Fecha Regreso', db_index=True, null=True)
+    ubicacion = models.CharField(max_length=200, verbose_name='ubicacion', null=True)
+    tipo = models.CharField(max_length=20, verbose_name='Tipo', null=True)
+    descripcion = models.CharField(max_length=200, verbose_name='Descripción', null=True)
     estado = models.IntegerField(verbose_name='Estado', db_index=True)
 
     
 class DetalleProceso(models.Model):
-    id = models.AutoField(primary_key=True)
-    id_proceso = models.IntegerField(verbose_name='Proceso', db_index=True)
-    id_inventario = models.IntegerField(verbose_name='Inventario', db_index=True)
+    id = models.AutoField(primary_key=True, db_index=True)
+    proceso = models.ForeignKey(Procesos, on_delete=models.CASCADE, related_name='detalles', null=True, db_index=True)
+    inventario = models.ForeignKey(Inventario, on_delete=models.CASCADE, related_name='detalles', null=True, db_index=True)
     
-    
+
 
 

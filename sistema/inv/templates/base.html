@@ -210,21 +210,32 @@
         <li class="nav-item dropdown pe-3">
 
           <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
-            <img src="#" alt="Profile" class="rounded-circle">
-            <span class="d-none d-md-block dropdown-toggle ps-2">K. Anderson</span>
+            <i class="bi bi-person-circle"></i>
+            
+            <span class="d-none d-md-block dropdown-toggle ps-2">
+              {% if user.is_authenticated %}{{ user.get_username }}{% else %}{{ user.get_rol }}{% endif %}
+            </span>
           </a><!-- End Profile Iamge Icon -->
 
           <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
             <li class="dropdown-header">
-              <h6>Kevin Anderson</h6>
-              <span>Web Designer</span>
+              {% if user.is_authenticated %}
+                <h6>{{ user.get_username }}</h6>  <!-- Muestra el nombre de usuario -->
+                  {% if user.rol == 1 %}
+                    <spam>Administrador</spam>
+                  {% else %}
+                    <spam>Usuario</spam>
+                  {% endif %}
+                
+              {% endif %}
+              
             </li>
             <li>
               <hr class="dropdown-divider">
             </li>
 
             <li>
-              <a class="dropdown-item d-flex align-items-center" href="#">
+              <a class="dropdown-item d-flex align-items-center" href="{% url 'perfil' %}">
                 <i class="bi bi-person"></i>
                 <span>My Profile</span>
               </a>

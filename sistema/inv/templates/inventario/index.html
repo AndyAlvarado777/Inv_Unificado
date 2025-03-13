@@ -6,8 +6,15 @@ Inventario
 
 
 {% block contenido %}
-<h1>Inventario</h1>
-<p>Inventario de equipos.</p>
+<div class="pagetitle">
+    <h1>Inventario</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'inicio' %}">Home</a></li>
+            <li class="breadcrumb-item">Equipos</li>
+        </ol>
+    </nav>
+</div><!-- End Page Title -->
 
 <a name="" id="" class="btn btn-primary" href="{% url 'crear_inventario' %}" role="button">Agregar</a>
 <br>
