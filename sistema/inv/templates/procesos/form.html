@@ -1,70 +1,74 @@
+<div class="card">
 
-    <div class="card">
-        
-        <div class="card-body" style="padding: 1em;">
-            <form id="agregarProcesoForm" method="POST" action="">
+    <div class="card-body" style="padding: 1em;">
+        <form id="agregarProcesoForm" method="POST" action="" enctype="multipart/form-data">
+            
                 {% csrf_token %}
-                <form method="POST">
-                    {% csrf_token %}
-                    
-                    <!-- Errores generales -->
-                    {{ form.non_field_errors }}
-                    
-                    <div class="row g-3 mb-4">
-                        <!-- Columna Izquierda -->
-                        <div class="col-md-6">
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label class="form-label">{{ form.solicitante.label }}</label>
-                                    {{ form.solicitante }}
-                                    <div class="text-danger">{{ form.solicitante.errors }}</div>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">{{ form.responsable.label }}</label>
-                                    {{ form.responsable }}
-                                    <div class="text-danger">{{ form.responsable.errors }}</div>
-                                </div>
+
+                <!-- Errores generales -->
+                {{ form.non_field_errors }}
+
+                <div class="row g-3 mb-4">
+                    <!-- Columna Izquierda -->
+                    <div class="col-md-6">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.solicitante.label }}</label>
+                                {{ form.solicitante }}
+                                <div class="text-danger">{{ form.solicitante.errors }}</div>
                             </div>
-                
-                            <div class="mb-3">
-                                <label class="form-label">{{ form.ubicacion.label }}</label>
-                                {{ form.ubicacion }}
-                                <div class="text-danger">{{ form.ubicacion.errors }}</div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.responsable.label }}</label>
+                                {{ form.responsable }}
+                                <div class="text-danger">{{ form.responsable.errors }}</div>
                             </div>
                         </div>
-                
-                        <!-- Columna Derecha -->
-                        <div class="col-md-6">
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label class="form-label">{{ form.fecha_inicio.label }}</label>
-                                    {{ form.fecha_inicio }}
-                                    <div class="text-danger">{{ form.fecha_inicio.errors }}</div>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">{{ form.fecha_fin.label }}</label>
-                                    {{ form.fecha_fin }}
-                                    <div class="text-danger">{{ form.fecha_fin.errors }}</div>
-                                </div>
-                            </div>
-                
-                            <div class="mb-3">
-                                <label class="form-label">{{ form.tipo.label }}</label>
-                                {{ form.tipo }}
-                                <div class="text-danger">{{ form.tipo.errors }}</div>
-                            </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">{{ form.ubicacion.label }}</label>
+                            {{ form.ubicacion }}
+                            <div class="text-danger">{{ form.ubicacion.errors }}</div>
                         </div>
                     </div>
-                
-                    <!-- Campo de ancho completo -->
-                    <div class="mb-4">
-                        <label class="form-label">{{ form.descripcion.label }}</label>
-                        {{ form.descripcion }}
-                        <div class="text-danger">{{ form.descripcion.errors }}</div>
+
+                    <!-- Columna Derecha -->
+                    <div class="col-md-6">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.fecha_inicio.label }}</label>
+                                {{ form.fecha_inicio }}
+                                <div class="text-danger">{{ form.fecha_inicio.errors }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.fecha_fin.label }}</label>
+                                {{ form.fecha_fin }}
+                                <div class="text-danger">{{ form.fecha_fin.errors }}</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">{{ form.tipo.label }}</label>
+                            {{ form.tipo }}
+                            <div class="text-danger">{{ form.tipo.errors }}</div>
+                        </div>
                     </div>
-                
-                
-                
+                </div>
+
+                <!-- Campo de ancho completo -->
+                <div class="mb-4">
+                    <label class="form-label">{{ form.descripcion.label }}</label>
+                    {{ form.descripcion }}
+                    <div class="text-danger">{{ form.descripcion.errors }}</div>
+                </div>
+                <!-- Dentro del formulario -->
+                <div class="mb-3">
+                    <label class="form-label">{{ form.documento.label }}</label>
+                    {{ form.documento }}
+                    <div class="text-danger">{{ form.documento.errors }}</div>
+                </div>
+
+
+
                 <h3>Asigna equipos al proceso</h3>
                 <div class="card">
                     <div class="table-container" style="padding: 1em;">
@@ -83,7 +87,8 @@
                                 <tr>
                                     <td>
                                         <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" name="equipos" value="{{ equipo.id }}">
+                                            <input class="form-check-input" type="checkbox" name="equipos"
+                                                value="{{ equipo.id }}">
                                         </div>
                                     </td>
                                     <td>{{ equipo.marca }}</td>
@@ -96,37 +101,35 @@
                         </table>
                     </div>
                 </div>
-            
+
                 <button type="submit" class="btn btn-primary me-2">Guardar Proceso</button>
                 <a href="{% url 'procesos' %}" class="btn btn-secondary">Cancelar</a>
             </form>
-            
-        </div>
+
     </div>
-    
+</div>
+
 
 <script>
-    document.getElementById('agregarProcesoForm').addEventListener('submit', function(e) {
-    const checkboxes = document.querySelectorAll('input[name="equipos"]:checked');
-    if (checkboxes.length === 0) {
-        e.preventDefault();
-        alert('Debe seleccionar al menos un equipo!');
-    }
-});
+    document.getElementById('agregarProcesoForm').addEventListener('submit', function (e) {
+        const checkboxes = document.querySelectorAll('input[name="equipos"]:checked');
+        if (checkboxes.length === 0) {
+            e.preventDefault();
+            alert('Debe seleccionar al menos un equipo!');
+        }
+    });
 </script>
 
 <script>
     $(document).ready(function () {
-    $('#miTabla').DataTable({
-        paging: true, // Habilita la paginación
-        searching: true, // Habilita la barra de búsqueda
-        ordering: true, // Habilita el ordenamiento por columnas
-        language: {
-            url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json" // Traducción al español
-        }
+        $('#miTabla').DataTable({
+            paging: true, // Habilita la paginación
+            searching: true, // Habilita la barra de búsqueda
+            ordering: true, // Habilita el ordenamiento por columnas
+            language: {
+                url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json" // Traducción al español
+            }
+        });
     });
-});
 
 </script>
-
-

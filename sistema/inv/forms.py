@@ -33,7 +33,7 @@ class ProcesoForm(forms.ModelForm):
     class Meta:
         model = Procesos
         fields = ('solicitante', 'responsable', 'ubicacion', 'tipo', 
-                 'fecha_inicio', 'fecha_fin', 'descripcion')
+                 'fecha_inicio', 'fecha_fin', 'descripcion','documento')
         widgets = {
             'solicitante': forms.Select(attrs={'class': 'form-select'}),
             'responsable': forms.Select(attrs={'class': 'form-select'}),
@@ -47,7 +47,13 @@ class ProcesoForm(forms.ModelForm):
                 attrs={'type': 'date', 'class': 'form-control', 'placeholder': 'Fecha de fin'}
             ),
             'descripcion': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'documento': forms.FileInput(attrs={'class': 'form-control'}),  
         }
+
+class DocumentoForm(forms.ModelForm):
+    class Meta:
+        model = Procesos
+        fields = ('documento',)        
 
 class RecibirEquipoForm(forms.Form):
     fecha_regreso = forms.DateField(label='Fecha de Regreso', widget=forms.DateInput(attrs={'type': 'date'}))

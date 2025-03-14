@@ -64,8 +64,12 @@ Inventario
 </td>
 
 
+<td>{% if datos.tipo_equipo == 1 %}
+    <span class="badge bg-purple">Equipo</span>
+    {% elif datos.tipo_equipo == 2 %}
+    <span class="badge bg-warning">Inventario</span>
+    {% endif %}</td>
 
-<td>{{ datos.tipo_equipo }}</td>
 <td>{{ datos.serie }}</td>
 <td>{{ datos.marca }}</td>
 <td>{{ datos.modelo }}</td>

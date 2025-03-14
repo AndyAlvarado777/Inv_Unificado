@@ -57,7 +57,7 @@ Procesos
                 <th>Fecha Fin</th>
                 <th>Estado</th>
                 <th>Descripción</th>
-                
+                <th>Documento</th>
             </tr>
         </thead>
         <tbody>
@@ -68,11 +68,18 @@ Procesos
                     <!-- Botón para abrir el modal -->
                     <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#detalleModal"
                         onclick="mostrarDetalles('{{ datos.id }}')"> <!-- Pasamos solo el ID -->
-                        +
+                        <i class="bi bi-plus-square-dotted"></i>
                     </button>
                 </td>
                 <td>
+                    
                     <div class="dropdown">
+                        <style>
+                            .dropdown .btn-light {
+                                background-color: #5a6268; /* Gris más fuerte */
+                                color: white;
+                            }
+                        </style>
                         <button class="btn btn-light btn-sm dropdown-toggle" type="button" id="dropdownMenuButton"
                             data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-three-dots"></i>
@@ -118,7 +125,7 @@ Procesos
                     {% endif %}
                 </td>
                 <td>{{datos.descripcion}}</td>
-                
+                <td>{{datos.documento}}</td>
             </tr>
             {% endfor %}
         </tbody>

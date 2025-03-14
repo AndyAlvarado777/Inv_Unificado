@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.utils.timezone import now
+import os
 # Create your models here.
 
 
@@ -64,6 +65,12 @@ class Inventario(models.Model):
     def __str__(self):
         return self.nombre  # Representación legible del usuario
     
+
+def guardar_documento(instance, filename):
+    ruta_guardado = r'C:\Temp'
+    nombre_archivo = f"{instance.id}_{filename}"
+    return os.path.join(ruta_guardado, nombre_archivo)
+
 class Procesos(models.Model):
     id = models.AutoField(primary_key=True, db_index=True)
     solicitante = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='solicitante', null=True, db_index=True)    
@@ -74,6 +81,7 @@ class Procesos(models.Model):
     fecha_fin = models.DateField(verbose_name='Fecha Fin', db_index=True)
     fecha_regreso = models.DateField(verbose_name='Fecha Regreso', db_index=True, null=True)
     ubicacion = models.CharField(max_length=200, verbose_name='ubicacion', null=True)
+    documento = models.FileField(upload_to='temp/', null=True, blank=True)
     tipo = models.CharField(max_length=20, verbose_name='Tipo', null=True)
     descripcion = models.CharField(max_length=200, verbose_name='Descripción', null=True)
     estado = models.IntegerField(verbose_name='Estado', db_index=True)

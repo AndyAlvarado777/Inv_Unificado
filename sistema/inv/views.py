@@ -4,6 +4,10 @@ from django.shortcuts import render
 from django.core.exceptions import MultipleObjectsReturned
 from django.db.models import Prefetch
 
+import os
+from django.core.files.storage import FileSystemStorage
+from django.core.files.uploadedfile import UploadedFile
+
 # Create your views here.
 import json
 from django.contrib.auth.hashers import make_password
@@ -22,6 +26,9 @@ from django.db.models import Q
 from django.contrib.auth import login as auth_login, authenticate
 from django.contrib.auth import logout
 from django.contrib import messages
+
+
+
 
 
 @login_required
@@ -179,40 +186,45 @@ def buscar_inventario(request):
     
 
 def crear_procesos(request):
-    
     if request.method == 'POST':
-        form = ProcesoForm(request.POST)
-        equipos_seleccionados = request.POST.getlist('equipos')  # Obtener equipos seleccionados
-
+        form = ProcesoForm(request.POST, request.FILES) # Nota el request.FILES
+        
         if form.is_valid():
             # Guardar el proceso principal
             proceso = form.save(commit=False)
             proceso.id_autorizo = 7  # Valor fijo
             proceso.id_autoriza_entrega = 7  # Valor fijo
             proceso.estado = 1  # Estado inicial
+            
+            # Manejar el archivo subido
+            archivo = request.FILES.get('documento')
+            if archivo:
+                fs = FileSystemStorage(location='C:/Temp')  # Establece el directorio de destino
+                filename = fs.save(archivo.name, archivo)  # Guarda el archivo
+                proceso.documento = f'C:/Temp/{filename}'  # Actualiza el campo documento
+                
             proceso.save()
 
             # Crear detalles del proceso para cada equipo seleccionado
             equipos_seleccionados = request.POST.getlist('equipos')
             for equipo_id in equipos_seleccionados:
-                equipo = Inventario.objects.get(id=equipo_id)  # Obtén la instancia
+                equipo = Inventario.objects.get(id=equipo_id)
                 DetalleProceso.objects.create(
                     proceso=proceso,
                     inventario=equipo
                 )
-                # Actualizar estado del equipo a inactivo
                 Inventario.objects.filter(id=equipo_id).update(estado=2)
 
             messages.success(request, 'Proceso creado exitosamente!')
-            return redirect('procesos')  # Redirigir a la lista de procesos
+            return redirect('procesos')
         else:
             messages.error(request, 'Por favor corrige los errores en el formulario.')
-
     else:
         form = ProcesoForm()
 
     inventario = Inventario.objects.filter(estado=1)
     return render(request, 'procesos/crear.html', {'form': form, 'inventario': inventario})
+
 
 def obtener_detalles_proceso(request, id):
     try:
@@ -319,6 +331,8 @@ def recibir_equipo(request, id):
             return redirect('procesos')
     else:
         return redirect('procesos')
+    
+    
 
 def agregar_equipo(request, equipo_id):
     if request.method == "POST":
