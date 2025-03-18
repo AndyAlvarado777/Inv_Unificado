@@ -284,10 +284,19 @@ def editar_proceso(request, id):
     proceso = Procesos.objects.get(id=id)
     
     if request.method == 'POST':
-        form = ProcesoForm(request.POST, instance=proceso)
+        form = ProcesoForm(request.POST, request.FILES, instance=proceso)
         
         if form.is_valid():
-            form.save()
+            proceso = form.save(commit=False)  # No guardar inmediatamente
+            
+            # Manejar el archivo subido
+            archivo = request.FILES.get('documento')
+            if archivo:
+                fs = FileSystemStorage(location='C:/Temp')
+                filename = fs.save(archivo.name, archivo)
+                proceso.documento = f'C:/Temp/{filename}'
+            
+            proceso.save()
             # Agregar lógica para agregar nuevos equipos al proceso
             equipos_seleccionados = request.POST.getlist('equipos')
             for equipo_id in equipos_seleccionados:
