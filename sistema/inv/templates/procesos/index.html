@@ -92,17 +92,22 @@ Procesos
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{% url 'editar_proceso' datos.id %}"><i
-                                        class="bi bi-eye"></i> Ver más</a>
+                                <a class="dropdown-item" href="{% url 'editar_proceso' datos.id %}"><i class="bi bi-pencil-square"></i> Editar</a>
+                                
                             </li>
                             {% if datos.estado != 2 %}
                             <li>
                                 <a class="dropdown-item" href="#" data-bs-toggle="modal"
                                     data-bs-target="#recibirEquipoModal" onclick="setProcesoId('{{ datos.id }}')">
-                                    <i class="bi bi-eye"></i> Recibir Equipo
+                                    <i class="bi bi-box-arrow-in-down"></i>
+                                     Recibir Equipo
                                 </a>
                             </li>
                             {% endif %}
+                            <li>
+                                <a class="dropdown-item" href="{% url 'eliminar_documento' datos.id %}"><i
+                                        class="bi bi-file-earmark-x"></i> Eliminar Documento</a>
+                            </li>
 
                         </ul>
                     </div>
@@ -125,7 +130,17 @@ Procesos
                     {% endif %}
                 </td>
                 <td>{{datos.descripcion}}</td>
-                <td>{{datos.documento}}</td>
+                
+                
+                <td>
+                    {% if datos.documento %}
+                        <a href="{{ datos.documento.url }}" target="_blank" class="text-decoration-none">
+                            📄 {{ datos.documento.name|cut:"C:/Temp/" }}
+                        </a>
+                    {% else %}
+                        Sin documento
+                    {% endif %}
+                </td>
             </tr>
             {% endfor %}
         </tbody>

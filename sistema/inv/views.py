@@ -226,6 +226,29 @@ def crear_procesos(request):
     return render(request, 'procesos/crear.html', {'form': form, 'inventario': inventario})
 
 
+def eliminar_documento(request, proceso_id):
+    try:
+        proceso = Procesos.objects.get(id=proceso_id)
+        if proceso.documento:
+            # Obtén el camino del archivo
+            archivo_path = proceso.documento.path
+            
+            # Elimina el archivo del sistema de archivos
+            if os.path.exists(archivo_path):
+                os.remove(archivo_path)
+            
+            # Actualiza el campo documento a None
+            proceso.documento = None
+            proceso.save()
+            messages.success(request, 'Documento eliminado correctamente.')
+        else:
+            messages.info(request, 'No hay documento asociado a este proceso.')
+    except Procesos.DoesNotExist:
+        messages.error(request, 'Proceso no encontrado.')
+    
+    return redirect('procesos')
+
+
 def obtener_detalles_proceso(request, id):
     try:
         proceso = Procesos.objects.select_related(
