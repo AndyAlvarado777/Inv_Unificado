@@ -4,8 +4,6 @@
         <form id="agregarProcesoForm" method="POST" action="" enctype="multipart/form-data">
             
                 {% csrf_token %}
-
-                <!-- Errores generales -->
                 {{ form.non_field_errors }}
 
                 <div class="row g-3 mb-4">
@@ -63,12 +61,18 @@
                 <!-- Dentro del formulario -->
                 <div class="mb-3">
                     <label class="form-label">{{ form.documento.label }}</label>
+                    {% if form.instance.documento %}
+                        <p>
+                            Archivo actual: 
+                            <a href="{{ form.instance.documento.url }}" target="_blank">
+                                {{ form.instance.documento.name }}
+                            </a>
+                        </p>
+                    {% endif %}
                     {{ form.documento }}
                     <div class="text-danger">{{ form.documento.errors }}</div>
                 </div>
-
-
-
+                <br>
                 <h3>Asigna equipos al proceso</h3>
                 <div class="card">
                     <div class="table-container" style="padding: 1em;">
@@ -108,9 +112,6 @@
 
     </div>
 </div>
-
-
-
 
 <script>
     $(document).ready(function () {

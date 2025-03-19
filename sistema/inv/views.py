@@ -4,6 +4,9 @@ from django.shortcuts import render
 from django.core.exceptions import MultipleObjectsReturned
 from django.db.models import Prefetch
 
+import openpyxl
+from openpyxl.styles import Font
+
 import os
 from django.core.files.storage import FileSystemStorage
 from django.core.files.uploadedfile import UploadedFile
@@ -149,7 +152,22 @@ def restablecer_contrasena(request, id):
 
 def inventario(request):
     inventario = Inventario.objects.all()
-    return render(request, 'inventario/index.html', {'inventario': inventario})
+
+    # Aplicar filtros
+    tipo_equipo = request.GET.get('tipo_equipo')
+    estado = request.GET.get('estado')
+
+    if tipo_equipo:
+        inventario = inventario.filter(tipo_equipo=tipo_equipo)
+    if estado:
+        inventario = inventario.filter(estado=estado)
+
+    context = {
+        'inventario': inventario
+    }
+    return render(request, 'inventario/index.html', context)
+
+    
     
 
 def crear_inventario(request):
@@ -382,4 +400,69 @@ def eliminar_equipo(request, equipo_id):
         return JsonResponse({'success': True})
 
 
-     
+
+def exportar_inventario(request):
+    # Crear el libro de Excel y la hoja
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Inventario"
+
+    # Definir los encabezados
+    encabezados = ['ID', 'Tipo', 'Serie', 'Marca', 'Modelo', 'Observaciones', 'Estado']
+    ws.append(encabezados)
+
+    # Estilizar los encabezados
+    header_font = Font(bold=True)
+    for col in range(1, len(encabezados) + 1):
+        cell = ws.cell(row=1, column=col)
+        cell.font = header_font
+
+    # Obtener los datos del inventario
+    inventario = Inventario.objects.all()
+
+    # Aplicar filtros
+    tipo_equipo = request.GET.get('tipo_equipo')
+    estado = request.GET.get('estado')
+
+    if tipo_equipo:
+        inventario = inventario.filter(tipo_equipo=tipo_equipo)
+    if estado:
+        inventario = inventario.filter(estado=estado)
+
+    # Llenar la hoja con los datos
+    for item in inventario:
+        tipo = "Equipo" if item.tipo_equipo == 1 else "Inventario"
+        estado = ""
+        if item.estado == 1:
+            estado = "En Inventario"
+        elif item.estado == 2:
+            estado = "Asignado"
+        elif item.estado == 3:
+            estado = "Prestado"
+        elif item.estado == 4:
+            estado = "En espera"
+        
+        fila = [item.id, tipo, item.serie, item.marca, item.modelo, item.observaciones, estado]
+        ws.append(fila)
+
+    # Ajustar el ancho de las columnas automáticamente
+    for col in ws.columns:
+        max_length = 0
+        column = col[0].column_letter  # Obtener la letra de la columna
+        for cell in col:
+            try:  # Puede haber celdas sin valor
+                if len(str(cell.value)) > max_length:
+                    max_length = len(str(cell.value))
+            except:
+                pass
+        adjusted_width = (max_length + 2)  # Agregar un poco de espacio
+        ws.column_dimensions[column].width = adjusted_width
+
+    # Preparar la respuesta HTTP
+    response = HttpResponse(content_type="application/ms-excel")
+    response['Content-Disposition'] = 'attachment; filename="inventario.xlsx"'
+
+    # Guardar el libro de Excel en la respuesta
+    wb.save(response)
+
+    return response

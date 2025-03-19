@@ -4,7 +4,6 @@
 Inventario
 {% endblock %}
 
-
 {% block contenido %}
 <div class="pagetitle">
     <h1>Inventario</h1>
@@ -17,10 +16,37 @@ Inventario
 </div><!-- End Page Title -->
 
 <a name="" id="" class="btn btn-primary" href="{% url 'crear_inventario' %}" role="button">Agregar</a>
-<br>
-<br>
+<a name="" id="" class="btn btn-success" href="{% url 'exportar_inventario' %}" role="button">Exportar a Excel</a>
+<br><br>
 
+<!-- Formulario de filtrado -->
+<form method="GET">
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <label class="form-label">Tipo de Equipo:</label>
+            <select class="form-select" name="tipo_equipo">
+                <option value="">Todos</option>
+                <option value="1" {% if request.GET.tipo_equipo == '1' %}selected{% endif %}>Equipo</option>
+                <option value="2" {% if request.GET.tipo_equipo == '2' %}selected{% endif %}>Inventario</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Estado:</label>
+            <select class="form-select" name="estado">
+                <option value="">Todos</option>
+                <option value="1" {% if request.GET.estado == '1' %}selected{% endif %}>En Inventario</option>
+                <option value="2" {% if request.GET.estado == '2' %}selected{% endif %}>Asignado</option>
+                <option value="3" {% if request.GET.estado == '3' %}selected{% endif %}>Prestado</option>
+                <option value="4" {% if request.GET.estado == '4' %}selected{% endif %}>En espera</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-secondary mt-4">Filtrar</button>
+        </div>
+    </div>
+</form>
 
+<!-- Tabla de inventario -->
 <div class="table-container">
     <table id="miTabla" class="table table-hover datatable">
         <thead class="table-dark">
@@ -33,64 +59,57 @@ Inventario
                 <th>Modelo</th>
                 <th>Observaciones</th>
                 <th>Estado</th>
-
-
             </tr>
         </thead>
         <tbody>
-
             {% for datos in inventario %}
-            <!-- Fila principal 1 -->
             <tr>
                 <td>{{ datos.id }}</td>
                 <td>
-                    <div class="dropdown"></div>
-                    <button class="btn btn-light btn-sm dropdown-toggle" type="button" id="dropdownMenuButton"
-                        data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-three-dots"></i>
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        
-                        <li>
-                            <a class="dropdown-item" href="#" data-bs-toggle="modal"
-                                data-bs-target="#confirmDeleteModal1" onclick="setDeleteId('{{ datos.id }}')">
-                                <i class="bi bi-trash"></i> Eliminar
-                            </a>
-                        </li>
-                        <li><a class="dropdown-item" href="{% url 'editar_inventario' %}"><i class="bi bi-eye"></i> Ver
-                                más</a></li>
-                    </ul>
+                    <div class="dropdown">
+                        <button class="btn btn-light btn-sm dropdown-toggle" type="button" id="dropdownMenuButton"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-three-dots"></i>
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                            <li>
+                                <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                    data-bs-target="#confirmDeleteModal1" onclick="setDeleteId('{{ datos.id }}')">
+                                    <i class="bi bi-trash"></i> Eliminar
+                                </a>
+                            </li>
+                            <li><a class="dropdown-item" href="{% url 'editar_inventario' %}"><i class="bi bi-eye"></i> Ver
+                                    más</a></li>
+                        </ul>
+                    </div>
+                </td>
+                <td>
+                    {% if datos.tipo_equipo == 1 %}
+                    <span class="badge bg-purple">Equipo</span>
+                    {% elif datos.tipo_equipo == 2 %}
+                    <span class="badge bg-warning">Inventario</span>
+                    {% endif %}
+                </td>
+                <td>{{ datos.serie }}</td>
+                <td>{{ datos.marca }}</td>
+                <td>{{ datos.modelo }}</td>
+                <td>{{ datos.observaciones }}</td>
+                <td>
+                    {% if datos.estado == 1 %}
+                    <span class="badge bg-success">En Inventario</span>
+                    {% elif datos.estado == 2 %}
+                    <span class="badge bg-warning text-dark">Asignado</span>
+                    {% elif datos.estado == 3 %}
+                    <span class="badge bg-info text-dark">Prestado</span>
+                    {% elif datos.estado == 4 %}
+                    <span class="badge bg-warning text-dark">En espera</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
-</td>
-
-
-<td>{% if datos.tipo_equipo == 1 %}
-    <span class="badge bg-purple">Equipo</span>
-    {% elif datos.tipo_equipo == 2 %}
-    <span class="badge bg-warning">Inventario</span>
-    {% endif %}</td>
-
-<td>{{ datos.serie }}</td>
-<td>{{ datos.marca }}</td>
-<td>{{ datos.modelo }}</td>
-<td>{{ datos.observaciones }}</td>
-
-<td>
-    {% if datos.estado == 1 %}
-    <span class="badge bg-success">En Inventario</span>
-    {% elif datos.estado == 2 %}
-    <span class="badge bg-warning text-dark">Asignado</span>
-    {% elif datos.estado == 3 %}
-    <span class="badge bg-info text-dark">Prestado</span>
-    {% elif datos.estado == 4 %}
-    <span class="badge bg-warning text-dark">En espera</span>
-    {% endif %}
-</td>
-
-</tr>
-
-{% endfor %}
-
 
 <!-- Modal de confirmación -->
 <div class="modal fade" id="confirmDeleteModal1" tabindex="-1" aria-labelledby="confirmDeleteModalLabel"
@@ -112,9 +131,6 @@ Inventario
     </div>
 </div>
 
-
-
-<!-- En el JavaScript del template -->
 <script>
     function setDeleteId(id) {
         deleteId = id;
@@ -122,13 +138,8 @@ Inventario
     
     document.getElementById('confirmDeleteButton').addEventListener('click', function() {
         if (deleteId) {
-            // Usa el nombre de la URL en lugar de la ruta hardcodeada
             window.location.href = "{% url 'eliminar_inventario' 0 %}".replace('0', deleteId);
         }
     });
 </script>
-</tbody>
-</table>
-</div>
-
 {% endblock %}
