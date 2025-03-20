@@ -23,6 +23,7 @@ urlpatterns = [
 
     path('procesos', views.procesos, name = 'procesos'),
     path('procesos/crear', views.crear_procesos, name = 'crear_procesos'),
+    path('procesos/eliminar/<int:id>', views.eliminar_proceso, name='eliminar_proceso'),
     path('procesos/<int:proceso_id>/eliminar_documento/', views.eliminar_documento, name='eliminar_documento'),
     path('procesos/<int:id>/detalles/', views.obtener_detalles_proceso, name='detalles_proceso'),
     path('agregar_equipo/<int:equipo_id>/', views.agregar_equipo, name='agregar_equipo'),

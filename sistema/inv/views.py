@@ -1,3 +1,4 @@
+
 from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import get_object_or_404, redirect
 from django.shortcuts import render
@@ -32,6 +33,7 @@ from django.db.models import Q
 from django.contrib.auth import login as auth_login, authenticate
 from django.contrib.auth import logout
 from django.contrib import messages
+
 
 
 
@@ -191,6 +193,8 @@ def eliminar_inventario(request, id):
 
 
 
+
+
 # Vistas para los procesos
 
 def procesos(request):
@@ -269,6 +273,19 @@ def crear_procesos(request):
     inventario = Inventario.objects.filter(estado=1)
     return render(request, 'procesos/crear.html', {'form': form, 'inventario': inventario})
 
+def eliminar_proceso(request,id):
+    proceso = get_object_or_404(Procesos,id=id)
+    # Actualizar estado de equipos antes de eliminar
+    for detalle in proceso.detalles.all():
+        equipo = detalle.inventario
+        equipo.estado = 1  # 1 = 'En inventario'
+        equipo.save(update_fields=['estado'])
+
+        # Eliminar proceso y detalles (CASCADE automático)
+    proceso.delete()
+    
+    messages.success(request, 'Proceso eliminado.')
+    return redirect('procesos')
 
 def eliminar_documento(request, proceso_id):
     try:

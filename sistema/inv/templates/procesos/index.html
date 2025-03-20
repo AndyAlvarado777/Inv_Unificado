@@ -477,7 +477,7 @@ Procesos
     document.getElementById('confirmDeleteButton').addEventListener('click', function () {
         if (deleteId) {
             // Usa el nombre de la URL en lugar de la ruta hardcodeada
-            window.location.href = "{% url 'eliminar_inventario' 0 %}".replace('0', deleteId);
+            window.location.href = "{% url 'eliminar_proceso' 0 %}".replace('0', deleteId);
         }
     });
 
