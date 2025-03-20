@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.shortcuts import render
 from django.core.exceptions import MultipleObjectsReturned
 from django.db.models import Prefetch
+from django.core.mail import EmailMessage
 
 import openpyxl
 from openpyxl.styles import Font
@@ -16,6 +17,8 @@ import json
 from django.contrib.auth.hashers import make_password
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
+
+from sistema import settings
 
 from .models import DetalleProceso, Procesos, Usuario
 from .forms import ProcesoForm, UsuarioForm
@@ -205,23 +208,46 @@ def buscar_inventario(request):
 
 def crear_procesos(request):
     if request.method == 'POST':
-        form = ProcesoForm(request.POST, request.FILES) # Nota el request.FILES
+        form = ProcesoForm(request.POST, request.FILES)
         
         if form.is_valid():
-            # Guardar el proceso principal
             proceso = form.save(commit=False)
-            proceso.id_autorizo = 7  # Valor fijo
-            proceso.id_autoriza_entrega = 7  # Valor fijo
-            proceso.estado = 1  # Estado inicial
+            proceso.id_autorizo = 7
+            proceso.id_autoriza_entrega = 7
+            proceso.estado = 1
             
-            # Manejar el archivo subido
-            archivo = request.FILES.get('documento')
-            if archivo:
-                fs = FileSystemStorage(location='C:/Temp')  # Establece el directorio de destino
-                filename = fs.save(archivo.name, archivo)  # Guarda el archivo
-                proceso.documento = f'C:/Temp/{filename}'  # Actualiza el campo documento
-                
+            # Manejo de archivo
+            if 'documento' in request.FILES:
+                archivo = request.FILES['documento']
+                fs = FileSystemStorage(location='C:/Temp')
+                filename = fs.save(archivo.name, archivo)
+                proceso.documento = f'C:/Temp/{filename}'
+            
             proceso.save()
+
+            # Envío de correo electrónico
+            asunto = f"Nuevo préstamo registrado - {proceso.id}"
+            cuerpo = f"""
+            Hola {proceso.solicitante.nombre},
+            
+            Se ha registrado tu préstamo de equipos con los siguientes detalles:
+            
+            - Fecha inicio: {proceso.fecha_inicio}
+            - Fecha fin: {proceso.fecha_fin}
+            - Ubicación: {proceso.ubicacion}
+            - Descripción: {proceso.descripcion}
+            
+            Equipo de soporte técnico
+            """
+            
+            email = EmailMessage(
+                subject=asunto,
+                body=cuerpo,
+                from_email=settings.EMAIL_HOST_USER,
+                to=[proceso.solicitante.correo],
+                cc=[proceso.responsable.correo] if proceso.responsable else None
+            )
+            email.send()
 
             # Crear detalles del proceso para cada equipo seleccionado
             equipos_seleccionados = request.POST.getlist('equipos')

@@ -96,6 +96,12 @@ DATABASES = {
     }
 }
 
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'alvaradoandy097@gmail.com'
+EMAIL_HOST_PASSWORD = 'ewfn bowf vbtl lofp'  # Usar variables de entorno en producción
+EMAIL_USE_TLS = True
+
 AUTHENTICATION_BACKENDS = [
     'inv.backends.EmailAuthBackend',
     'django.contrib.auth.backends.ModelBackend',

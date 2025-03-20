@@ -4,7 +4,6 @@
 Procesos
 {% endblock %}
 
-
 {% block contenido %}
 <div class="mt-4">
     {% if messages %}
@@ -196,10 +195,6 @@ Procesos
     </div>
 </div>
 
-
-
-
-
 <!-- Modal para mostrar detalles -->
 <div class="modal fade" id="detalleModal" tabindex="-1" aria-labelledby="detalleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -233,14 +228,12 @@ Procesos
         procesoIdGlobal = procesoId;
     }
 
-
     // Función para pasar datos dinámicamente al modal
     function mostrarDetalles(data) {
         document.getElementById('detalle-id').textContent = data.id;
         document.getElementById('detalle-solicitante').textContent = data.solicitante;
     }
 
-   
 
     document.getElementById('recibirEquipoForm').addEventListener('submit', function(event) {
     event.preventDefault();
