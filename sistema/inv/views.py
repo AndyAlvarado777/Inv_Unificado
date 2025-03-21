@@ -35,10 +35,7 @@ from django.contrib.auth import logout
 from django.contrib import messages
 
 
-
-
-
-
+#Vistas para el login y para loguearse 
 @login_required
 def inicio(request):
     return render(request, 'inicio.html')
@@ -87,7 +84,7 @@ def logout_view(request):
     return redirect('inicio')  # Redirige a la página principal o a la página de login
 
 
-#Vistas para usuarios
+#Vistas para usuarios 
 @login_required
 def usuarios(request):
     user = Usuario.objects.all()
@@ -154,7 +151,6 @@ def restablecer_contrasena(request, id):
 
 
 # Vistas para Inventario.
-
 def inventario(request):
     inventario = Inventario.objects.all()
 
@@ -173,8 +169,6 @@ def inventario(request):
     return render(request, 'inventario/index.html', context)
 
     
-    
-
 def crear_inventario(request):
     formulario = InventarioForm(request.POST or None)
     if formulario.is_valid():
@@ -193,8 +187,7 @@ def eliminar_inventario(request, id):
 
 
 
-
-
+#---------------------------------------------------------------------------------------------
 # Vistas para los procesos
 
 def procesos(request):
@@ -215,73 +208,104 @@ def crear_procesos(request):
         form = ProcesoForm(request.POST, request.FILES)
         
         if form.is_valid():
+            # Crear proceso base
             proceso = form.save(commit=False)
             proceso.id_autorizo = 7
             proceso.id_autoriza_entrega = 7
             proceso.estado = 1
             
-            # Manejo de archivo
             if 'documento' in request.FILES:
                 archivo = request.FILES['documento']
                 fs = FileSystemStorage(location='C:/Temp')
                 filename = fs.save(archivo.name, archivo)
                 proceso.documento = f'C:/Temp/{filename}'
             
-            proceso.save()
+            proceso.save()  # Guardar primero para obtener ID[1][2]
 
-            # Envío de correo electrónico
-            asunto = f"Nuevo préstamo registrado - {proceso.id}"
+            # Crear detalles del proceso y actualizar inventario
+            equipos_seleccionados = request.POST.getlist('equipos')
+            detalles_creados = []
+            
+            for equipo_id in equipos_seleccionados:
+                equipo = Inventario.objects.get(id=equipo_id)
+                detalle = DetalleProceso.objects.create(
+                    proceso=proceso,
+                    inventario=equipo
+                )
+                detalles_creados.append(detalle)
+                equipo.estado = 2
+                equipo.save()
+
+            # Obtener datos frescos del proceso con relaciones[8]
+            proceso_refreshed = Procesos.objects.prefetch_related('detalles').get(id=proceso.id)
+            # Calcular y guardar la cantidad de días
+            diferencia_dias = (proceso.fecha_fin - proceso.fecha_inicio).days
+            proceso.cantidad_dias = diferencia_dias
+            proceso.save()  # Guardar el cambio
+            # Construir lista de equipos con detalles
+            equipos_info = [
+                f"{detalle.inventario.modelo} (Serie: {detalle.inventario.serie})"
+                for detalle in proceso_refreshed.detalles.all()
+            ]
+
+            # Crear cuerpo del correo
             cuerpo = f"""
-            Hola {proceso.solicitante.nombre},
+            Hola {proceso.solicitante.nombre} este correo es de parte del equipo de IT como prueba del proceso que se esta realizando,
             
-            Se ha registrado tu préstamo de equipos con los siguientes detalles:
+            Préstamo registrado con éxito:
             
+            **Equipos asignados:**
+            {chr(10).join(['- ' + eq for eq in equipos_info])}
+            
+            **Detalles del préstamo:**
             - Fecha inicio: {proceso.fecha_inicio}
             - Fecha fin: {proceso.fecha_fin}
             - Ubicación: {proceso.ubicacion}
-            - Descripción: {proceso.descripcion}
             
-            Equipo de soporte técnico
+            
             """
             
             email = EmailMessage(
-                subject=asunto,
+                subject=f"Nuevo préstamo {proceso.id}",
                 body=cuerpo,
                 from_email=settings.EMAIL_HOST_USER,
                 to=[proceso.solicitante.correo],
                 cc=[proceso.responsable.correo] if proceso.responsable else None
             )
+            
+
+                
             email.send()
 
-            # Crear detalles del proceso para cada equipo seleccionado
-            equipos_seleccionados = request.POST.getlist('equipos')
-            for equipo_id in equipos_seleccionados:
-                equipo = Inventario.objects.get(id=equipo_id)
-                DetalleProceso.objects.create(
-                    proceso=proceso,
-                    inventario=equipo
-                )
-                Inventario.objects.filter(id=equipo_id).update(estado=2)
-
-            messages.success(request, 'Proceso creado exitosamente!')
+            messages.success(request, 'Proceso creado y notificación enviada')
             return redirect('procesos')
+            
         else:
-            messages.error(request, 'Por favor corrige los errores en el formulario.')
-    else:
-        form = ProcesoForm()
-
+            messages.error(request, 'Errores en el formulario')
+            return render(request, 'procesos/crear.html', {'form': form})
+    
+    # GET request
+    form = ProcesoForm()
     inventario = Inventario.objects.filter(estado=1)
     return render(request, 'procesos/crear.html', {'form': form, 'inventario': inventario})
 
-def eliminar_proceso(request,id):
-    proceso = get_object_or_404(Procesos,id=id)
+
+def eliminar_proceso(request, id):
+    proceso = get_object_or_404(Procesos, id=id)
+    
     # Actualizar estado de equipos antes de eliminar
     for detalle in proceso.detalles.all():
         equipo = detalle.inventario
         equipo.estado = 1  # 1 = 'En inventario'
         equipo.save(update_fields=['estado'])
-
-        # Eliminar proceso y detalles (CASCADE automático)
+    
+    # Eliminar documento si existe
+    if proceso.documento:
+        archivo_path = proceso.documento.path
+        if os.path.exists(archivo_path):
+            os.remove(archivo_path)
+    
+    # Eliminar proceso y detalles (CASCADE automático)
     proceso.delete()
     
     messages.success(request, 'Proceso eliminado.')

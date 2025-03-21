@@ -81,6 +81,7 @@ class Procesos(models.Model):
     fecha_fin = models.DateField(verbose_name='Fecha Fin', db_index=True)
     fecha_regreso = models.DateField(verbose_name='Fecha Regreso', db_index=True, null=True)
     ubicacion = models.CharField(max_length=200, verbose_name='ubicacion', null=True)
+    cantidad_dias = models.IntegerField(verbose_name='Cantidad de dias',null=True, db_index=True)
     documento = models.FileField(upload_to='temp/', null=True, blank=True)
     tipo = models.CharField(max_length=20, verbose_name='Tipo', null=True)
     descripcion = models.CharField(max_length=200, verbose_name='Descripción', null=True)

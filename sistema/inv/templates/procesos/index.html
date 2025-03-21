@@ -54,6 +54,7 @@ Procesos
                 <th>Responsable</th>
                 <th>Fecha inicio</th>
                 <th>Fecha Fin</th>
+                <th>Cantidad/Dias</th>
                 <th>Estado</th>
                 <th>Descripción</th>
                 <th>Documento</th>
@@ -84,12 +85,14 @@ Procesos
                             <i class="bi bi-three-dots"></i>
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                            {% if datos.estado != 2 %}
                             <li>
                                 <a class="dropdown-item" href="#" data-bs-toggle="modal"
                                     data-bs-target="#confirmDeleteModal1" onclick="setDeleteId('{{ datos.id }}')">
                                     <i class="bi bi-trash"></i> Eliminar
                                 </a>
                             </li>
+                            {% endif %}
                             <li>
                                 <a class="dropdown-item" href="{% url 'editar_proceso' datos.id %}"><i class="bi bi-pencil-square"></i> Editar</a>
                                 
@@ -117,6 +120,7 @@ Procesos
                 <td>{{datos.responsable}}</td>
                 <td>{{datos.fecha_inicio}}</td>
                 <td>{{datos.fecha_fin}}</td>
+                <td><center>{{datos.cantidad_dias}}</center> </td>
                 <td>
                     {% if datos.estado == 1 %}
                     <span class="badge bg-success">Activo</span>
@@ -301,12 +305,7 @@ Procesos
                                         <i class="bi bi-three-dots"></i>
                                     </button>
                                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                        <li>
-                                            <a class="dropdown-item" href="#" data-bs-toggle="modal"
-                                                data-bs-target="#confirmDeleteModal1" onclick="setDeleteId('${equipo.id_equipo}')">
-                                                <i class="bi bi-trash"></i> Eliminar
-                                            </a>
-                                        </li>
+                                        
                                         <li>
                                             <a class="dropdown-item" href="#" onclick="quitarEquipo(${equipo.id_equipo}, ${procesoId})">
                                                 <i class="bi bi-x-circle"></i> Quitar de Proceso
@@ -496,12 +495,6 @@ Procesos
         }
         return cookieValue;
     }
-
-
-
-    // Enviar el token CSRF con la solicitud AJAX
-
-
 
 </script>
 </tbody>
