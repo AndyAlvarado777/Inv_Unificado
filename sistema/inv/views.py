@@ -1,31 +1,23 @@
-
 from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import get_object_or_404, redirect
 from django.shortcuts import render
 from django.core.exceptions import MultipleObjectsReturned
 from django.db.models import Prefetch
 from django.core.mail import EmailMessage
-
 import openpyxl
 from openpyxl.styles import Font
-
 import os
 from django.core.files.storage import FileSystemStorage
 from django.core.files.uploadedfile import UploadedFile
-
-# Create your views here.
 import json
 from django.contrib.auth.hashers import make_password
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-
 from sistema import settings
-
 from .models import DetalleProceso, Procesos, Usuario
 from .forms import ProcesoForm, UsuarioForm
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-
 from .models import Inventario
 from .forms import InventarioForm
 from django.views.decorators.http import require_GET
@@ -44,11 +36,9 @@ def login_view(request):
     if request.method == 'POST':
         correo = request.POST.get('correo')
         password = request.POST.get('password')
-
         try:
             # Autenticar al usuario
             user = authenticate(request, correo=correo, password=password)
-
             if user is not None:
                 if user.estado == 1:  # Verificar si el estado del usuario es activo
                     auth_login(request, user)  # Iniciar sesión
@@ -74,11 +64,8 @@ def login_view(request):
                 request,
                 f"Se encontraron {cantidad} usuarios con el mismo correo '{correo}'. Contacta al administrador."
             )
-
         return render(request, 'registration/login.html')
-
     return render(request, 'registration/login.html')
-
 def logout_view(request):
     logout(request)  # Cierra la sesión del usuario
     return redirect('inicio')  # Redirige a la página principal o a la página de login
@@ -107,14 +94,12 @@ def crear_usuario(request):
 
 def eliminar_usuario(request, id):
     user = get_object_or_404(Usuario, id=id)
-    
     # Verificar que no sea el propio usuario
     if request.user != user:
         user.delete()
         messages.success(request, 'Usuario eliminado correctamente.')
     else:
         messages.error(request, 'No puedes eliminar tu propio usuario.')
-
     return redirect('usuarios')
 
 def editar_usuario(request, id):
@@ -131,20 +116,16 @@ def restablecer_contrasena(request, id):
         try:
             data = json.loads(request.body)
             new_password = data.get('new_password')
-
             if not new_password:
                 return JsonResponse({'error': 'La nueva contraseña es obligatoria.'}, status=400)
-
             user = Usuario.objects.get(id=id)
             user.password = make_password(new_password)  # Encripta la contraseña antes de guardarla.
             user.save()
-
             return JsonResponse({'message': 'Contraseña restablecida con éxito.'}, status=200)
         except Usuario.DoesNotExist:
             return JsonResponse({'error': 'Usuario no encontrado.'}, status=404)
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Datos inválidos.'}, status=400)
-
     return JsonResponse({'error': 'Método no permitido.'}, status=405)
     
 
@@ -153,16 +134,13 @@ def restablecer_contrasena(request, id):
 # Vistas para Inventario.
 def inventario(request):
     inventario = Inventario.objects.all()
-
     # Aplicar filtros
     tipo_equipo = request.GET.get('tipo_equipo')
     estado = request.GET.get('estado')
-
     if tipo_equipo:
         inventario = inventario.filter(tipo_equipo=tipo_equipo)
     if estado:
         inventario = inventario.filter(estado=estado)
-
     context = {
         'inventario': inventario
     }
@@ -206,26 +184,21 @@ def buscar_inventario(request):
 def crear_procesos(request):
     if request.method == 'POST':
         form = ProcesoForm(request.POST, request.FILES)
-        
         if form.is_valid():
             # Crear proceso base
             proceso = form.save(commit=False)
             proceso.id_autorizo = 7
             proceso.id_autoriza_entrega = 7
             proceso.estado = 1
-            
             if 'documento' in request.FILES:
                 archivo = request.FILES['documento']
                 fs = FileSystemStorage(location='C:/Temp')
                 filename = fs.save(archivo.name, archivo)
                 proceso.documento = f'C:/Temp/{filename}'
-            
             proceso.save()  # Guardar primero para obtener ID[1][2]
-
             # Crear detalles del proceso y actualizar inventario
             equipos_seleccionados = request.POST.getlist('equipos')
             detalles_creados = []
-            
             for equipo_id in equipos_seleccionados:
                 equipo = Inventario.objects.get(id=equipo_id)
                 detalle = DetalleProceso.objects.create(
@@ -235,7 +208,6 @@ def crear_procesos(request):
                 detalles_creados.append(detalle)
                 equipo.estado = 2
                 equipo.save()
-
             # Obtener datos frescos del proceso con relaciones[8]
             proceso_refreshed = Procesos.objects.prefetch_related('detalles').get(id=proceso.id)
             # Calcular y guardar la cantidad de días
@@ -247,13 +219,10 @@ def crear_procesos(request):
                 f"{detalle.inventario.modelo} (Serie: {detalle.inventario.serie})"
                 for detalle in proceso_refreshed.detalles.all()
             ]
-
             # Crear cuerpo del correo
             cuerpo = f"""
             Hola {proceso.solicitante.nombre} este correo es de parte del equipo de IT como prueba del proceso que se esta realizando,
-            
             Préstamo registrado con éxito:
-            
             **Equipos asignados:**
             {chr(10).join(['- ' + eq for eq in equipos_info])}
             
@@ -261,29 +230,20 @@ def crear_procesos(request):
             - Fecha inicio: {proceso.fecha_inicio}
             - Fecha fin: {proceso.fecha_fin}
             - Ubicación: {proceso.ubicacion}
-            
-            
             """
-            
             email = EmailMessage(
                 subject=f"Nuevo préstamo {proceso.id}",
                 body=cuerpo,
                 from_email=settings.EMAIL_HOST_USER,
                 to=[proceso.solicitante.correo],
                 cc=[proceso.responsable.correo] if proceso.responsable else None
-            )
-            
-
-                
+            ) 
             email.send()
-
             messages.success(request, 'Proceso creado y notificación enviada')
             return redirect('procesos')
-            
         else:
             messages.error(request, 'Errores en el formulario')
             return render(request, 'procesos/crear.html', {'form': form})
-    
     # GET request
     form = ProcesoForm()
     inventario = Inventario.objects.filter(estado=1)
@@ -292,24 +252,21 @@ def crear_procesos(request):
 
 def eliminar_proceso(request, id):
     proceso = get_object_or_404(Procesos, id=id)
-    
     # Actualizar estado de equipos antes de eliminar
     for detalle in proceso.detalles.all():
         equipo = detalle.inventario
         equipo.estado = 1  # 1 = 'En inventario'
         equipo.save(update_fields=['estado'])
-    
     # Eliminar documento si existe
     if proceso.documento:
         archivo_path = proceso.documento.path
         if os.path.exists(archivo_path):
             os.remove(archivo_path)
-    
     # Eliminar proceso y detalles (CASCADE automático)
     proceso.delete()
-    
     messages.success(request, 'Proceso eliminado.')
     return redirect('procesos')
+
 
 def eliminar_documento(request, proceso_id):
     try:
@@ -317,11 +274,9 @@ def eliminar_documento(request, proceso_id):
         if proceso.documento:
             # Obtén el camino del archivo
             archivo_path = proceso.documento.path
-            
             # Elimina el archivo del sistema de archivos
             if os.path.exists(archivo_path):
                 os.remove(archivo_path)
-            
             # Actualiza el campo documento a None
             proceso.documento = None
             proceso.save()
@@ -330,7 +285,6 @@ def eliminar_documento(request, proceso_id):
             messages.info(request, 'No hay documento asociado a este proceso.')
     except Procesos.DoesNotExist:
         messages.error(request, 'Proceso no encontrado.')
-    
     return redirect('procesos')
 
 
@@ -342,7 +296,6 @@ def obtener_detalles_proceso(request, id):
         ).prefetch_related(
             Prefetch('detalles', queryset=DetalleProceso.objects.select_related('inventario'))
         ).get(id=id)
-        
         detalles_equipos = []
         for detalle in proceso.detalles.all():
             equipo = detalle.inventario
@@ -354,7 +307,6 @@ def obtener_detalles_proceso(request, id):
                 'modelo': equipo.modelo,
                 'observaciones': equipo.observaciones
             })
-        
         data = {
             'proceso': {
                 'solicitante': f"{proceso.solicitante}",
@@ -367,43 +319,35 @@ def obtener_detalles_proceso(request, id):
             'equipos': detalles_equipos
         }
         return JsonResponse(data)
-    
     except Procesos.DoesNotExist:
         return JsonResponse({'error': 'Proceso no encontrado'}, status=404)
     
+
 def quitar_equipo(request, proceso_id, equipo_id):
     try:
         # Obtener el detalle del proceso
         detalle = DetalleProceso.objects.get(proceso_id=proceso_id, inventario_id=equipo_id)
-        
         # Cambiar el estado del equipo a "1" (En inventario)
         Inventario.objects.filter(id=equipo_id).update(estado=1)
-        
         # Eliminar la fila del detalle del proceso
         detalle.delete()
-        
         return JsonResponse({'success': True})
-    
     except DetalleProceso.DoesNotExist:
         return JsonResponse({'error': 'Equipo no encontrado en el proceso'}, status=404)
     
 
 def editar_proceso(request, id):
     proceso = Procesos.objects.get(id=id)
-    
     if request.method == 'POST':
         form = ProcesoForm(request.POST, request.FILES, instance=proceso)
-        
         if form.is_valid():
             proceso = form.save(commit=False)  # No guardar inmediatamente
-            
             # Manejar el archivo subido
             archivo = request.FILES.get('documento')
             if archivo:
                 fs = FileSystemStorage(location='C:/Temp')
                 filename = fs.save(archivo.name, archivo)
                 proceso.documento = f'C:/Temp/{filename}'
-            
             proceso.save()
             # Agregar lógica para agregar nuevos equipos al proceso
             equipos_seleccionados = request.POST.getlist('equipos')
@@ -414,7 +358,6 @@ def editar_proceso(request, id):
                     inventario=equipo
                 )
                 Inventario.objects.filter(id=equipo_id).update(estado=2)
-            
             messages.success(request, 'Proceso editado exitosamente!')
             return redirect('procesos')
         else:
@@ -422,25 +365,22 @@ def editar_proceso(request, id):
     else:
         form = ProcesoForm(instance=proceso)
         inventario = Inventario.objects.filter(estado=1)
-    
     return render(request, 'procesos/editar.html', {'form': form, 'inventario': inventario})
+
 
 def recibir_equipo(request, id):
     if request.method == 'POST':
         fecha_regreso = request.POST.get('fecha_regreso')
-        
         try:
             proceso = Procesos.objects.get(id=id)
             proceso.fecha_regreso = fecha_regreso
             proceso.estado = 2  # Estado regresado
             proceso.save()
-            
             # Actualizar estado de los equipos relacionados
             for detalle in proceso.detalles.all():
                 equipo = detalle.inventario
                 equipo.estado = 1  # Estado en inventario
                 equipo.save()
-            
             messages.success(request, 'Equipo recibido con éxito.')
             return redirect('procesos')
         except Procesos.DoesNotExist:
@@ -459,6 +399,7 @@ def agregar_equipo(request, equipo_id):
         equipo.save()
         return redirect('crear_procesos') 
     
+
 def eliminar_equipo(request, equipo_id):
     if request.method == "POST":
         equipo = Inventario.objects.get(id=equipo_id)
@@ -473,29 +414,23 @@ def exportar_inventario(request):
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "Inventario"
-
     # Definir los encabezados
     encabezados = ['ID', 'Tipo', 'Serie', 'Marca', 'Modelo', 'Observaciones', 'Estado']
     ws.append(encabezados)
-
     # Estilizar los encabezados
     header_font = Font(bold=True)
     for col in range(1, len(encabezados) + 1):
         cell = ws.cell(row=1, column=col)
         cell.font = header_font
-
     # Obtener los datos del inventario
     inventario = Inventario.objects.all()
-
     # Aplicar filtros
     tipo_equipo = request.GET.get('tipo_equipo')
     estado = request.GET.get('estado')
-
     if tipo_equipo:
         inventario = inventario.filter(tipo_equipo=tipo_equipo)
     if estado:
         inventario = inventario.filter(estado=estado)
-
     # Llenar la hoja con los datos
     for item in inventario:
         tipo = "Equipo" if item.tipo_equipo == 1 else "Inventario"
@@ -508,10 +443,8 @@ def exportar_inventario(request):
             estado = "Prestado"
         elif item.estado == 4:
             estado = "En espera"
-        
         fila = [item.id, tipo, item.serie, item.marca, item.modelo, item.observaciones, estado]
         ws.append(fila)
-
     # Ajustar el ancho de las columnas automáticamente
     for col in ws.columns:
         max_length = 0
@@ -524,12 +457,9 @@ def exportar_inventario(request):
                 pass
         adjusted_width = (max_length + 2)  # Agregar un poco de espacio
         ws.column_dimensions[column].width = adjusted_width
-
     # Preparar la respuesta HTTP
     response = HttpResponse(content_type="application/ms-excel")
     response['Content-Disposition'] = 'attachment; filename="inventario.xlsx"'
-
     # Guardar el libro de Excel en la respuesta
     wb.save(response)
-
     return response
