@@ -92,6 +92,7 @@ def crear_usuario(request):
         return redirect('usuarios')
     return render(request, 'usuarios/crear.html', {'formulario': formulario})
 
+@login_required
 def eliminar_usuario(request, id):
     user = get_object_or_404(Usuario, id=id)
     # Verificar que no sea el propio usuario
@@ -102,6 +103,7 @@ def eliminar_usuario(request, id):
         messages.error(request, 'No puedes eliminar tu propio usuario.')
     return redirect('usuarios')
 
+@login_required
 def editar_usuario(request, id):
     user = Usuario.objects.get(id=id)
     formulario = UsuarioForm(request.POST or None, instance=user)
@@ -110,6 +112,7 @@ def editar_usuario(request, id):
         return redirect('usuarios')
     return render(request, 'usuarios/editar.html', {'formulario': formulario})
 
+@login_required
 @csrf_exempt  # Solo para pruebas; usa un middleware CSRF en producción.
 def restablecer_contrasena(request, id):
     if request.method == 'POST':
@@ -132,6 +135,7 @@ def restablecer_contrasena(request, id):
 
 
 # Vistas para Inventario.
+@login_required
 def inventario(request):
     inventario = Inventario.objects.all()
     # Aplicar filtros
@@ -146,7 +150,7 @@ def inventario(request):
     }
     return render(request, 'inventario/index.html', context)
 
-    
+@login_required
 def crear_inventario(request):
     formulario = InventarioForm(request.POST or None)
     if formulario.is_valid():
@@ -155,19 +159,24 @@ def crear_inventario(request):
         return redirect('inventario')
     return render(request, 'inventario/crear.html', {'formulario': formulario})
 
+@login_required
 def editar_inventario(request):
     render(request, 'inventario/editar.html')
 
+@login_required
 def eliminar_inventario(request, id):
-    inventario = get_object_or_404(Inventario,id=id)
-    inventario.delete()
-    return redirect('inventario')
-
+    inventario = get_object_or_404(Inventario, id=id)
+    
+    if inventario.detalles.exists():  # Verifica si hay relaciones en DetalleProceso
+        return JsonResponse({'error': 'No se puede eliminar equipo asignado a un proceso'}, status=400)
+    else:
+        inventario.delete()
+        return JsonResponse({'success': 'Equipo eliminado exitosamente'})
 
 
 #---------------------------------------------------------------------------------------------
 # Vistas para los procesos
-
+@login_required
 def procesos(request):
     procesos = Procesos.objects.all()
     return render(request, 'procesos/index.html', {'procesos': procesos})
@@ -180,7 +189,7 @@ def buscar_inventario(request):
     inventario = Inventario.objects.filter(nombre__icontains=query).values('id', 'modelo')
     return JsonResponse(list(inventario), safe=False)
     
-
+@login_required
 def crear_procesos(request):
     if request.method == 'POST':
         form = ProcesoForm(request.POST, request.FILES)
@@ -249,7 +258,7 @@ def crear_procesos(request):
     inventario = Inventario.objects.filter(estado=1)
     return render(request, 'procesos/crear.html', {'form': form, 'inventario': inventario})
 
-
+@login_required
 def eliminar_proceso(request, id):
     proceso = get_object_or_404(Procesos, id=id)
     # Actualizar estado de equipos antes de eliminar
@@ -267,7 +276,7 @@ def eliminar_proceso(request, id):
     messages.success(request, 'Proceso eliminado.')
     return redirect('procesos')
 
-
+@login_required
 def eliminar_documento(request, proceso_id):
     try:
         proceso = Procesos.objects.get(id=proceso_id)
@@ -287,7 +296,7 @@ def eliminar_documento(request, proceso_id):
         messages.error(request, 'Proceso no encontrado.')
     return redirect('procesos')
 
-
+@login_required
 def obtener_detalles_proceso(request, id):
     try:
         proceso = Procesos.objects.select_related(
@@ -322,7 +331,7 @@ def obtener_detalles_proceso(request, id):
     except Procesos.DoesNotExist:
         return JsonResponse({'error': 'Proceso no encontrado'}, status=404)
     
-
+@login_required
 def quitar_equipo(request, proceso_id, equipo_id):
     try:
         # Obtener el detalle del proceso
@@ -335,7 +344,7 @@ def quitar_equipo(request, proceso_id, equipo_id):
     except DetalleProceso.DoesNotExist:
         return JsonResponse({'error': 'Equipo no encontrado en el proceso'}, status=404)
     
-
+@login_required
 def editar_proceso(request, id):
     proceso = Procesos.objects.get(id=id)
     if request.method == 'POST':
@@ -367,7 +376,7 @@ def editar_proceso(request, id):
         inventario = Inventario.objects.filter(estado=1)
     return render(request, 'procesos/editar.html', {'form': form, 'inventario': inventario})
 
-
+@login_required
 def recibir_equipo(request, id):
     if request.method == 'POST':
         fecha_regreso = request.POST.get('fecha_regreso')
@@ -390,7 +399,7 @@ def recibir_equipo(request, id):
         return redirect('procesos')
     
     
-
+@login_required
 def agregar_equipo(request, equipo_id):
     if request.method == "POST":
         # Cambiar el estado del equipo a 4
@@ -399,7 +408,7 @@ def agregar_equipo(request, equipo_id):
         equipo.save()
         return redirect('crear_procesos') 
     
-
+@login_required
 def eliminar_equipo(request, equipo_id):
     if request.method == "POST":
         equipo = Inventario.objects.get(id=equipo_id)
@@ -408,7 +417,7 @@ def eliminar_equipo(request, equipo_id):
         return JsonResponse({'success': True})
 
 
-
+@login_required
 def exportar_inventario(request):
     # Crear el libro de Excel y la hoja
     wb = openpyxl.Workbook()
@@ -463,3 +472,6 @@ def exportar_inventario(request):
     # Guardar el libro de Excel en la respuesta
     wb.save(response)
     return response
+
+def asignacionEquipo(request):
+    return render(request, 'asignacionEquipos/index.html')

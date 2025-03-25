@@ -32,6 +32,8 @@ urlpatterns = [
     path('procesos/<int:id>/editar/', views.editar_proceso, name='editar_proceso'),
     path('procesos/<int:id>/recibir-equipo/', views.recibir_equipo, name='recibir_equipo'),
 
+    path('asignaciones/', views.asignacionEquipo, name='asignaciones'),
+
     path('inventario/exportar/', views.exportar_inventario, name='exportar_inventario'),
     
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

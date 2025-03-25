@@ -18,9 +18,10 @@ class UsuarioForm(forms.ModelForm):
 class InventarioForm(forms.ModelForm):
     class Meta:
         model = Inventario
-        fields = ('tipo_equipo', 'serie', 'marca', 'modelo', 'observaciones', 'estado')
+        fields = ('tipo_equipo','nombre_equipo', 'serie', 'marca', 'modelo', 'observaciones', 'estado')
         widgets = {
             'tipo_equipo': forms.Select(choices=[(1, 'Equipo'), (2, 'Inventario')], attrs={'class': 'form-select'}),
+            'nombre_equipo': forms.TextInput(attrs={'class': 'form-control'}),
             'serie': forms.TextInput(attrs={'class': 'form-control'}),
             'marca': forms.TextInput(attrs={'class': 'form-control'}),
             'modelo': forms.TextInput(attrs={'class': 'form-control'}),

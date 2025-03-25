@@ -469,32 +469,53 @@ Procesos
     }
 </style>
 <script>
-    function setDeleteId(id) {
-        deleteId = id;
-    }
+    let deleteId = null;
 
-    document.getElementById('confirmDeleteButton').addEventListener('click', function () {
-        if (deleteId) {
-            // Usa el nombre de la URL en lugar de la ruta hardcodeada
-            window.location.href = "{% url 'eliminar_proceso' 0 %}".replace('0', deleteId);
-        }
-    });
+function setDeleteId(id) {
+    deleteId = id;
+}
 
-
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
+document.getElementById('confirmDeleteButton').addEventListener('click', function () {
+    if (deleteId) {
+        // Enviar solicitud AJAX para eliminar el inventario
+        $.ajax({
+            url: "{% url 'eliminar_proceso' 0 %}".replace('0', deleteId),  // Utiliza la URL correcta
+            method: 'GET', // o 'DELETE' si prefieres
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')  // Incluye el token CSRF
+            },
+            success: function (response) {
+                if (response.success) {
+                    alert(response.success); // Muestra el mensaje de éxito
+                    window.location.reload(); // Recargar la página
+                } else if (response.error) {
+                    alert(response.error); // Muestra el mensaje de error
                 }
+            },
+            error: function (xhr) {
+                console.error('Error al eliminar el inventario:', xhr.responseText);
+                alert('Error al eliminar el inventario.');
+            }
+        });
+    }
+});
+
+// Función para obtener el valor de la cookie CSRF
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
             }
         }
-        return cookieValue;
     }
+    return cookieValue;
+}
 
 </script>
 </tbody>

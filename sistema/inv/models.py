@@ -50,6 +50,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     
 class Inventario(models.Model):
     id = models.AutoField(primary_key=True)
+    nombre_equipo = models.CharField(max_length=100,verbose_name='Nombre Equipo', db_index=True, null=True)
     tipo_equipo = models.IntegerField(verbose_name='Tipo Equipo', db_index=True)
     serie = models.CharField(max_length=100, verbose_name='Serie', db_index=True)
     marca = models.CharField(max_length=100,verbose_name='Marca', db_index=True)
